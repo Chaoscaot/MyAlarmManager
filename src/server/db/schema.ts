@@ -1,12 +1,13 @@
 import { relations, sql } from "drizzle-orm";
 import {
-  index,
-  integer,
-  pgTableCreator,
-  primaryKey,
-  text,
-  timestamp,
-  varchar,
+    boolean,
+    index,
+    integer, pgEnum,
+    pgTableCreator,
+    primaryKey,
+    text,
+    timestamp,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -16,28 +17,7 @@ import { type AdapterAccount } from "next-auth/adapters";
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = pgTableCreator((name) => `my-alarm-manager_${name}`);
-
-export const posts = createTable(
-  "post",
-  {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("created_by", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
-  },
-  (example) => ({
-    createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  })
-);
+export const createTable = pgTableCreator((name) => `alarm-${name}`);
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
@@ -127,3 +107,58 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   })
 );
+
+export const webhooks = createTable(
+    "webhooks",
+    {
+        id: integer("id").notNull().primaryKey().generatedByDefaultAsIdentity(),
+        userId: varchar("user_id", { length: 255 })
+            .notNull()
+            .references(() => users.id),
+        token: varchar("token").notNull()
+
+    },
+    (hooks) => ({
+        tokenIdx: index("token_index").on(hooks.token),
+    })
+);
+
+export const crewEnum = pgEnum("vehicle_crew", ["GRUPPE", "STAFFEL", "TRUPP", "MTW"]);
+
+export const vehicles = createTable(
+    "vehicles",
+    {
+        id: varchar("id", { length: 255 })
+            .notNull()
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        userId: varchar("user_id", { length: 255 })
+            .notNull()
+            .references(() => users.id),
+        name: varchar("name", { length: 255 }).notNull(),
+        callSign: varchar("call_sign", { length: 255 }).notNull(),
+        crew: crewEnum("crew"),
+        staffelBenchSeats: boolean("staffel_bench_seats"),
+    }
+);
+
+export const alarms = createTable(
+    "alarms",
+    {
+        id: varchar("id", { length: 255 })
+            .notNull()
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        userId: varchar("user_id", { length: 255 })
+            .notNull()
+            .references(() => users.id),
+        keyword: varchar("keyword", { length: 16 }).notNull(),
+        date: timestamp("date").defaultNow(),
+        gone: boolean("gone"),
+        vehicle: varchar("vehicle", { length: 255 }).references(() => vehicles.id),
+        seat: integer("seat"),
+        address: varchar("address", { length: 255 }),
+        createdAt: timestamp("createdAt").defaultNow().notNull(),
+        updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => sql`now()`),
+    }
+)
