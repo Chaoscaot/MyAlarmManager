@@ -8,5 +8,5 @@ export default {
   dbCredentials: {
     url: env.DATABASE_URL,
   },
-  tablesFilter: ["my-alarm-manager_*"],
+  tablesFilter: ["alarm-*"],
 } satisfies Config;

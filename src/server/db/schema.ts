@@ -115,8 +115,10 @@ export const webhooks = createTable(
         userId: varchar("user_id", { length: 255 })
             .notNull()
             .references(() => users.id),
-        token: varchar("token").notNull()
-
+        token: varchar("token").notNull(),
+        name: varchar("name", { length: 255 }).notNull(),
+        createdAt: timestamp("createdAt").defaultNow().notNull(),
+        updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => sql`now()`),
     },
     (hooks) => ({
         tokenIdx: index("token_index").on(hooks.token),
@@ -153,6 +155,7 @@ export const alarms = createTable(
             .notNull()
             .references(() => users.id),
         keyword: varchar("keyword", { length: 16 }).notNull(),
+        units: varchar("units", { length: 1024 }).notNull(),
         date: timestamp("date").defaultNow(),
         gone: boolean("gone"),
         vehicle: varchar("vehicle", { length: 255 }).references(() => vehicles.id),
@@ -162,3 +165,6 @@ export const alarms = createTable(
         updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => sql`now()`),
     }
 )
+
+export type SelectAlarm = typeof alarms.$inferSelect;
+

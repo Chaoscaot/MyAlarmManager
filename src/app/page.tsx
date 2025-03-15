@@ -1,5 +1,4 @@
 import { auth } from "~/server/auth";
-import {api, HydrateClient} from "~/trpc/server";
 import {redirect} from "next/navigation";
 
 export default async function Home() {
@@ -7,16 +6,7 @@ export default async function Home() {
 
   if (!session) {
     redirect("/api/auth/signin");
+  } else {
+    redirect("/dashboard")
   }
-
-  const alarms = await api.alarms.all();
-
-  return (
-    <HydrateClient>
-      <h1>Logged In!</h1>
-      {alarms?.map(alarm => (
-          <h2>{alarm.keyword}</h2>
-      ))}
-    </HydrateClient>
-  );
 }
