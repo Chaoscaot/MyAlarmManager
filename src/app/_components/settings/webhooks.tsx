@@ -186,7 +186,7 @@ export default function WebhookManager() {
           ))}
         </TableBody>
       </Table>
-      <CreateWebhookComponent invalidate={utils.hooks.list.invalidate} />
+      <CreateWebhookComponent invalidate={() => utils.hooks.list.invalidate()} />
     </div>
   );
 }
