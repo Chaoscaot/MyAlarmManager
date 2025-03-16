@@ -1,18 +1,19 @@
 import React from "react";
 import { DataTable } from "~/app/(sidebar)/alarms/table";
-import { columns } from "~/app/(sidebar)/alarms/columns";
-import { api } from "~/trpc/server";
 import CreateAlarmDialog from "./dialogs";
+import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Page() {
-  const alarms = await api.alarms.all();
+  await api.alarms.all.prefetch();
 
   return (
-    <div className="flex flex-col gap-4 px-4">
-      <div className="flex flex-row justify-end gap-4">
-        <CreateAlarmDialog />
+    <HydrateClient>
+      <div className="flex flex-col gap-4 px-4">
+        <div className="flex flex-row justify-end gap-4">
+          <CreateAlarmDialog />
+        </div>
+        <DataTable />
       </div>
-      <DataTable columns={columns} data={alarms} />
-    </div>
+    </HydrateClient>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 
 import {
-  BadgeCheck,
-  Bell, Car,
+  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut, Settings,
-  Sparkles,
 } from "lucide-react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -47,7 +44,7 @@ function NavUser({ session }: { session: Session }) {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{session.user.name}</span>
-                <span className="truncate text-xs">{session.user.email}</span>
+                <span className="truncate text-xs">{session.user.showEmail ? session.user.email : ""}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -66,7 +63,7 @@ function NavUser({ session }: { session: Session }) {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{session.user.name}</span>
-                  <span className="truncate text-xs">{session.user.email}</span>
+                  <span className="truncate text-xs">{session.user.showEmail ? session.user.email : ""}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -76,12 +73,6 @@ function NavUser({ session }: { session: Session }) {
                 <Link href={"/settings"}>
                   <Settings />
                   Einstellungen
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={"/vehicles"}>
-                  <Car />
-                  Fahrzeuge
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>

@@ -11,7 +11,7 @@ export const alarmsRouter = createTRPCRouter({
         keyword: z.string(),
         address: z.string().optional(),
         date: z.date(),
-        gone: z.boolean(),
+        gone: z.boolean().nullable(),
     })).mutation(async ({ ctx, input }) => {
         await ctx.db.insert(alarms).values({
             userId: ctx.session.user.id,

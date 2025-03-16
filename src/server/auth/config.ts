@@ -23,13 +23,15 @@ declare module "next-auth" {
       id: string;
       // ...other properties
       // role: UserRole;
+      wehrName: string | null;
+      showEmail: boolean;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface AdapterUser {
+    wehrName: string | null;
+    showEmail: boolean ;
+  }
 }
 
 /**

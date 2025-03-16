@@ -1,24 +1,9 @@
-"use client"
+import { auth } from "~/server/auth";
+import SettingsDialog from "~/app/(sidebar)/@modal/(.)settings/settings-dialog";
 
-import React from 'react';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "~/components/ui/dialog";
-import {useRouter} from "next/navigation";
-import SettingsPage from "~/app/(sidebar)/settings/page"
-import {DialogBody} from "next/dist/client/components/react-dev-overlay/ui/components/dialog";
-
-export default function Settings() {
-    const router = useRouter();
-
-    return (
-        <Dialog defaultOpen={true} modal={true} open={true} onOpenChange={(to) => !to && router.back()}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Settings</DialogTitle>
-                </DialogHeader>
-                <DialogBody>
-                    <SettingsPage />
-                </DialogBody>
-            </DialogContent>
-        </Dialog>
-    );
+export default async function Settings() {
+    const session = await auth();
+  return (
+      <SettingsDialog session={session!} />
+  );
 }

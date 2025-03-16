@@ -1,7 +1,6 @@
 import {type NextRequest} from "next/server";
 import {db} from "~/server/db";
 import {alarms} from "~/server/db/schema";
-import {z} from "zod";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ hook: string }> }) {
     const { hook } = await params;

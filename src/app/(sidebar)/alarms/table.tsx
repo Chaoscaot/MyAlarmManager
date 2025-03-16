@@ -1,6 +1,6 @@
 "use client"
 
-import {type ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
+import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {
   Table,
   TableBody, TableCell,
@@ -8,18 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { columns } from "./columns";
+import {api} from "~/trpc/react";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-}
+export function DataTable() {
+  const alarms = api.alarms.all.useQuery();
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
   const table = useReactTable({
-    data,
+    data: alarms.data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   });

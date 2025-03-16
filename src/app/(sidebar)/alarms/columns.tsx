@@ -3,6 +3,7 @@
 import { type SelectAlarm } from "~/server/db/schema";
 import { type ColumnDef } from "@tanstack/react-table";
 import {Checkbox} from "~/components/ui/checkbox";
+import RowActions from "./row-actions";
 
 export const columns: ColumnDef<SelectAlarm>[] = [
     {
@@ -41,5 +42,14 @@ export const columns: ColumnDef<SelectAlarm>[] = [
     {
         accessorKey: "seat",
         header: "Position",
+    },
+    {
+        accessorKey: "id",
+        header: "Aktion",
+        cell: ({row}) => {
+            return (
+                <RowActions id={row.getValue("id")} />
+            )
+        }
     }
 ]

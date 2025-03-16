@@ -1,13 +1,14 @@
 import { relations, sql } from "drizzle-orm";
 import {
-    boolean,
-    index,
-    integer, pgEnum,
-    pgTableCreator,
-    primaryKey,
-    text,
-    timestamp,
-    varchar,
+  boolean,
+  index,
+  integer,
+  pgEnum,
+  pgTableCreator,
+  primaryKey,
+  text,
+  timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -31,6 +32,10 @@ export const users = createTable("user", {
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
+
+  // Settings
+  wehrName: varchar("wehr_name", { length: 255 }),
+  showEmail: boolean("show_email").default(true),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -63,7 +68,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -86,7 +91,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_user_id_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -105,66 +110,74 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
 
 export const webhooks = createTable(
-    "webhooks",
-    {
-        id: integer("id").notNull().primaryKey().generatedByDefaultAsIdentity(),
-        userId: varchar("user_id", { length: 255 })
-            .notNull()
-            .references(() => users.id),
-        token: varchar("token").notNull(),
-        name: varchar("name", { length: 255 }).notNull(),
-        createdAt: timestamp("createdAt").defaultNow().notNull(),
-        updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => sql`now()`),
-    },
-    (hooks) => ({
-        tokenIdx: index("token_index").on(hooks.token),
-    })
+  "webhooks",
+  {
+    id: integer("id").notNull().primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    token: varchar("token").notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt")
+      .defaultNow()
+      .$onUpdate(
+        () => sql`now
+        ()`,
+      ),
+  },
+  (hooks) => ({
+    tokenIdx: index("token_index").on(hooks.token),
+  }),
 );
 
-export const crewEnum = pgEnum("vehicle_crew", ["GRUPPE", "STAFFEL", "TRUPP", "MTW"]);
+export const crewEnum = pgEnum("vehicle_crew", [
+  "GRUPPE",
+  "STAFFEL",
+  "TRUPP",
+  "MTW",
+]);
 
-export const vehicles = createTable(
-    "vehicles",
-    {
-        id: varchar("id", { length: 255 })
-            .notNull()
-            .primaryKey()
-            .$defaultFn(() => crypto.randomUUID()),
-        userId: varchar("user_id", { length: 255 })
-            .notNull()
-            .references(() => users.id),
-        name: varchar("name", { length: 255 }).notNull(),
-        callSign: varchar("call_sign", { length: 255 }).notNull(),
-        crew: crewEnum("crew"),
-        staffelBenchSeats: boolean("staffel_bench_seats"),
-    }
-);
+export const vehicles = createTable("vehicles", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  callSign: varchar("call_sign", { length: 255 }).notNull(),
+  crew: crewEnum("crew"),
+  staffelBenchSeats: boolean("staffel_bench_seats"),
+});
 
-export const alarms = createTable(
-    "alarms",
-    {
-        id: varchar("id", { length: 255 })
-            .notNull()
-            .primaryKey()
-            .$defaultFn(() => crypto.randomUUID()),
-        userId: varchar("user_id", { length: 255 })
-            .notNull()
-            .references(() => users.id),
-        keyword: varchar("keyword", { length: 16 }).notNull(),
-        units: varchar("units", { length: 1024 }).notNull(),
-        date: timestamp("date").defaultNow(),
-        gone: boolean("gone"),
-        vehicle: varchar("vehicle", { length: 255 }).references(() => vehicles.id),
-        seat: integer("seat"),
-        address: varchar("address", { length: 255 }),
-        createdAt: timestamp("createdAt").defaultNow().notNull(),
-        updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => sql`now()`),
-    }
-)
+export const alarms = createTable("alarms", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  keyword: varchar("keyword", { length: 16 }).notNull(),
+  units: varchar("units", { length: 1024 }).notNull(),
+  date: timestamp("date").defaultNow(),
+  gone: boolean("gone"),
+  vehicle: varchar("vehicle", { length: 255 }).references(() => vehicles.id),
+  seat: integer("seat"),
+  address: varchar("address", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .$onUpdate(
+      () => sql`now
+        ()`,
+    ),
+});
 
 export type SelectAlarm = typeof alarms.$inferSelect;
-

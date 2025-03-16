@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { DialogBody } from "next/dist/client/components/react-dev-overlay/ui/components/dialog";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,22 +24,32 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
+import { useState } from "react";
+import { DateTimePicker24h } from "~/components/ui/date-time-picker";
+import { Checkbox } from "~/components/ui/checkbox";
 
 const formSchema = z.object({
-  keyword: z.string().max(16, "Stichwort zu lang!"),
-  address: z.string().max(255, "Adresse zu lang!"),
+  keyword: z
+    .string()
+    .min(2, "Stichwort zu kurz!")
+    .max(16, "Stichwort zu lang!"),
+  address: z.string().max(255, "Adresse zu lang!").optional(),
   date: z.date(),
-  gone: z.boolean(),
+  gone: z.boolean().nullable(),
 });
 
-function DialogForm() {
+function DialogForm({
+  onClose,
+}: Readonly<{
+  onClose: () => void;
+}>) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      keyword: "",
-      address: "",
-      date: new Date(),
-      gone: false,
+      keyword: undefined,
+      address: undefined,
+      date: undefined,
+      gone: null,
     },
   });
 
@@ -79,8 +88,8 @@ function DialogForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    createAlarm.mutate(values)
+    onClose();
+    createAlarm.mutate(values);
   }
 
   return (
@@ -88,7 +97,7 @@ function DialogForm() {
       <DialogHeader>
         <DialogTitle>Einsatz anlegen</DialogTitle>
       </DialogHeader>
-      <DialogBody>
+      <Dialog>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -108,24 +117,55 @@ function DialogForm() {
               control={form.control}
             />
             <FormField
-                render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Adresse</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Musterstraße 1" />
-                      </FormControl>
-                      <FormDescription>
-                        Adresse des Einsatzes
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                )}
-                name={"address"}
-                control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Adresse</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Musterstraße 1" />
+                  </FormControl>
+                  <FormDescription>Adresse des Einsatzes</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+              name={"address"}
+              control={form.control}
+            />
+            <FormField
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alamierung</FormLabel>
+                  <FormControl>
+                    <DateTimePicker24h
+                      date={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormDescription>Zeitpunkt der Alamierung</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+              name={"date"}
+              control={form.control}
+            />
+            <FormField
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gegangen</FormLabel>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              name={"gone"}
+              control={form.control}
             />
           </form>
         </Form>
-      </DialogBody>
+      </Dialog>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">Abbrechen</Button>
@@ -137,13 +177,15 @@ function DialogForm() {
 }
 
 export default function CreateAlarmDialog() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Einsatz Hinzufügen</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogForm />
+        <DialogForm onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

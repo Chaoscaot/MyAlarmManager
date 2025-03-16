@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-    SidebarGroup, SidebarGroupLabel,
+    SidebarGroup,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem
 } from "~/components/ui/sidebar";
 import Link from "next/link";
-import {FireExtinguisher, LayoutDashboard} from "lucide-react";
+import { Car, FireExtinguisher, LayoutDashboard } from "lucide-react";
 
 function NavMain() {
     return (
@@ -25,6 +25,14 @@ function NavMain() {
                         <Link href={"/alarms"}>
                             <FireExtinguisher />
                             Einsätze
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link href={"/vehicles"}>
+                            <Car />
+                            Fahrzeuge
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
