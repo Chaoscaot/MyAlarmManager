@@ -24,7 +24,7 @@ COPY . .
 
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN bun run build
+RUN SKIP_ENV_VALIDATION=1 bun run build
 
 ##### RUNNER
 
