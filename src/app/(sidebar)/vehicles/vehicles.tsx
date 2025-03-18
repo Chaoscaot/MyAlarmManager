@@ -2,16 +2,20 @@
 
 import { api } from "~/trpc/react";
 import {
-  Card, CardContent,
+  Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
 import React from "react";
 import AddVehicleDialog from "~/app/(sidebar)/vehicles/add-vehicle";
-import {Button} from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
+import type { Session } from "next-auth";
 
-export default function VehiclesComponent() {
+export default function VehiclesComponent({
+  session,
+}: Readonly<{ session: Session }>) {
   const vehicles = api.vehicles.all.useQuery().data ?? [];
 
   return (
@@ -23,9 +27,9 @@ export default function VehiclesComponent() {
         <Card key={vehicle.id}>
           <CardHeader>
             <CardTitle>{vehicle.name}</CardTitle>
-            <CardDescription>{vehicle.callSign}</CardDescription>
+            <CardDescription>{session.user.wehrName ? `Florian ${session.user.wehrName} ` : null}{vehicle.callSign}</CardDescription>
           </CardHeader>
-          <CardContent className="justify-end flex flex-row">
+          <CardContent className="flex flex-row justify-end">
             <Button variant="destructive">Delete</Button>
           </CardContent>
         </Card>

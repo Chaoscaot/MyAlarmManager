@@ -16,6 +16,8 @@ import type { Session } from "next-auth";
 import { Input } from "~/components/ui/input";
 import React from "react";
 import { Button } from "~/components/ui/button";
+import { api } from "~/trpc/react";
+import {Checkbox} from "~/components/ui/checkbox";
 
 const formSchema = z.object({
   wehrName: z.string().nullable(),
@@ -25,17 +27,25 @@ const formSchema = z.object({
 export default function GeneralSettingsPane({
   session,
 }: Readonly<{ session: Session }>) {
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      wehrName: session.user.wehrName,
+      wehrName: session.user.wehrName ?? "",
+      showEmail: session.user.showEmail,
     },
   });
+
+  const updateSettings = api.user.saveSettings.useMutation();
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    updateSettings.mutate(values);
+  }
 
   return (
     <>
       <Form {...form}>
-        <form>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             render={({ field }) => (
               <FormItem>
@@ -51,9 +61,21 @@ export default function GeneralSettingsPane({
             )}
             name={"wehrName"}
           />
+          <FormField
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-Mail Anzeigen</FormLabel>
+                <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+            name={"showEmail"}
+          />
         </form>
       </Form>
-      <Button>Speichern</Button>
+      <Button className="mt-4" onClick={form.handleSubmit(onSubmit)}>Speichern</Button>
     </>
   );
 }

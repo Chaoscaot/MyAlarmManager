@@ -27,3 +27,9 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Push the Docker image
       run: docker push ghcr.io/chaoscaot/my-alarm-manager:latest
+    - name: Deploy Container
+      uses: tyrrrz/action-http-request@master
+      with:
+        url: ${{ secrets.WATCHTOWER_TOKEN }}
+        headers: |
+          Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}

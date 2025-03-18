@@ -165,7 +165,6 @@ export const alarms = createTable("alarms", {
     .notNull()
     .references(() => users.id),
   keyword: varchar("keyword", { length: 16 }).notNull(),
-  units: varchar("units", { length: 1024 }).notNull(),
   date: timestamp("date").defaultNow(),
   gone: boolean("gone"),
   vehicle: varchar("vehicle", { length: 255 }).references(() => vehicles.id),

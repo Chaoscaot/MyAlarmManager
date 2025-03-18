@@ -1,6 +1,6 @@
 import React from "react";
 import { DataTable } from "~/app/(sidebar)/alarms/table";
-import CreateAlarmDialog from "./dialogs";
+import CreateAlarmDialog from "./add-dialog";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Page() {

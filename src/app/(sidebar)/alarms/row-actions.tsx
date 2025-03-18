@@ -1,11 +1,11 @@
 import React from "react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
-import { Menu } from "lucide-react";
+import {Edit, Menu, Trash} from "lucide-react";
 
 function RowActions({ id }: Readonly<{ id: string }>) {
   return (
@@ -15,7 +15,10 @@ function RowActions({ id }: Readonly<{ id: string }>) {
           <Menu />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>{id}</DropdownMenuContent>
+      <DropdownMenuContent>
+          <DropdownMenuItem><Edit /> Bearbeiten</DropdownMenuItem>
+          <DropdownMenuItem><Trash /> Löschen</DropdownMenuItem>
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }
