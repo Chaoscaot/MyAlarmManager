@@ -66,6 +66,7 @@ export default function GeneralSettingsPane({
               <FormItem>
                 <FormLabel>E-Mail Anzeigen</FormLabel>
                 <FormControl>
+                    {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <FormMessage />

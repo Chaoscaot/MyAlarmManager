@@ -18,6 +18,7 @@ function RowActions({ id }: Readonly<{ id: string }>) {
       <DropdownMenuContent>
           <DropdownMenuItem><Edit /> Bearbeiten</DropdownMenuItem>
           <DropdownMenuItem><Trash /> Löschen</DropdownMenuItem>
+          {id}
       </DropdownMenuContent>
     </DropdownMenu>
   );
