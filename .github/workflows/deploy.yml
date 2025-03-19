@@ -30,6 +30,6 @@ jobs:
     - name: Deploy Container
       uses: tyrrrz/action-http-request@master
       with:
-        url: ${{ secrets.WATCHTOWER_TOKEN }}
+        url: ${{ secrets.WATCHTOWER_URL }}
         headers: |
           Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}
