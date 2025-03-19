@@ -1,6 +1,6 @@
 import {createTRPCRouter, protectedProcedure} from "~/server/api/trpc";
 import {alarms} from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import {and, eq} from "drizzle-orm";
 import { z } from "zod";
 
 export const alarmsRouter = createTRPCRouter({
@@ -20,5 +20,8 @@ export const alarmsRouter = createTRPCRouter({
             address: input.address,
             date: new Date(input.date),
         });
+    }),
+    del: protectedProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
+        await ctx.db.delete(alarms).where(and(eq(alarms.userId, ctx.session.user.id), eq(alarms.id, input)));
     })
 });

@@ -12,6 +12,13 @@ import React from "react";
 import AddVehicleDialog from "~/app/(sidebar)/vehicles/add-vehicle";
 import { Button } from "~/components/ui/button";
 import type { Session } from "next-auth";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "~/components/ui/alert-dialog";
 
 export default function VehiclesComponent({
   session,
@@ -48,7 +55,26 @@ export default function VehiclesComponent({
             <CardDescription>{session.user.wehrName ? `Florian ${session.user.wehrName} ` : null}{vehicle.callSign}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-row justify-end">
-            <Button variant="destructive" onClick={() => deleteVehicle.mutate(vehicle.id)}>Delete</Button>
+            <AlertDialog>
+              <AlertDialogTrigger>
+                <Button>Delete</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Fahrzeug löschen</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Möchten Sie dieses Fahrzeug wirklich löschen? Diese Aktion kann
+                    nicht rückgängig gemacht werden.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteVehicle.mutate(vehicle.id)}>
+                    Löschen
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
       ))}

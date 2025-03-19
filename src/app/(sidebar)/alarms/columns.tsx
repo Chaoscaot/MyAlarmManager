@@ -29,10 +29,10 @@ export const columns: ColumnDef<SelectAlarm>[] = [
         header: "Gegangen",
         cell: ({row}) => {
             return (
-                <div className="flex">
-                    <Checkbox checked={row.getValue("gone")} />
-                </div>
-            )
+              <div className="flex">
+                <Checkbox checked={row.getValue("gone")} />
+              </div>
+            );
         }
     },
     {

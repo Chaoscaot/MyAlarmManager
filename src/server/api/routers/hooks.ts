@@ -20,14 +20,6 @@ export const hooksRouter = createTRPCRouter({
         return base64Rng;
     }),
     delete: protectedProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
-        const tokens = await ctx.db.select().from(webhooks).where(and(eq(webhooks.id, input), eq(webhooks.userId, ctx.session.user.id)));
-
-        if (!tokens) {
-            throw new Error()
-        }
-
-        for (const token of tokens) {
-            await ctx.db.delete(webhooks).where(eq(webhooks.id, token.id));
-        }
+        await ctx.db.delete(webhooks).where(and(eq(webhooks.id, input), eq(webhooks.userId, ctx.session.user.id)));
     })
 })

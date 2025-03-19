@@ -35,7 +35,7 @@ const formSchema = z.object({
     .max(16, "Stichwort zu lang!"),
   address: z.string().max(255, "Adresse zu lang!").optional(),
   date: z.date(),
-  gone: z.boolean().nullable(),
+  gone: z.boolean(),
 });
 
 function DialogForm({
@@ -49,7 +49,7 @@ function DialogForm({
       keyword: undefined,
       address: undefined,
       date: undefined,
-      gone: null,
+      gone: true,
     },
   });
 

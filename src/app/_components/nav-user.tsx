@@ -75,7 +75,7 @@ function NavUser({ session }: { session: Session }) {
                   Einstellungen
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem disabled>
                 <Bell />
                 Unvollständige Alarme
               </DropdownMenuItem>
