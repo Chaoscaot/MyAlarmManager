@@ -24,7 +24,7 @@ export default function VehiclesComponent({
 
       const prevData = utils.vehicles.all.getData();
 
-      utils.vehicles.all.setData(undefined, (old) => old.filter((v) => v.id !== added));
+      utils.vehicles.all.setData(undefined, (old) => old?.filter((v) => v.id !== added));
 
       return { prevData };
     },
