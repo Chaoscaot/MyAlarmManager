@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {crewEnum, vehicles} from "~/server/db/schema";
-import {eq} from "drizzle-orm";
+import {and, eq} from "drizzle-orm";
 import {z} from "zod";
 
 export const vehiclesRouter = createTRPCRouter({
@@ -16,5 +16,8 @@ export const vehiclesRouter = createTRPCRouter({
       ...input,
       userId: ctx.session.user.id,
     })
+  }),
+  del: protectedProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    ctx.db.delete(vehicles).where(and(eq(vehicles.userId, ctx.session.user.id), eq(vehicles.userId, input)));
   })
 });

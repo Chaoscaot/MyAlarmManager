@@ -17,6 +17,24 @@ export default function VehiclesComponent({
   session,
 }: Readonly<{ session: Session }>) {
   const vehicles = api.vehicles.all.useQuery().data ?? [];
+  const utils = api.useUtils();
+  const deleteVehicle = api.vehicles.del.useMutation({
+    async onMutate(added) {
+      await utils.vehicles.all.cancel();
+
+      const prevData = utils.vehicles.all.getData();
+
+      utils.vehicles.all.setData(undefined, (old) => old.filter((v) => v.id !== added));
+
+      return { prevData };
+    },
+    onError(err, newPost, ctx) {
+      utils.vehicles.all.setData(undefined, ctx!.prevData);
+    },
+    async onSettled() {
+      await utils.vehicles.all.invalidate();
+    },
+  });
 
   return (
     <div className="flex flex-col gap-4 px-4">
@@ -30,7 +48,7 @@ export default function VehiclesComponent({
             <CardDescription>{session.user.wehrName ? `Florian ${session.user.wehrName} ` : null}{vehicle.callSign}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-row justify-end">
-            <Button variant="destructive">Delete</Button>
+            <Button variant="destructive" onClick={() => deleteVehicle.mutate(vehicle.id)}>Delete</Button>
           </CardContent>
         </Card>
       ))}
