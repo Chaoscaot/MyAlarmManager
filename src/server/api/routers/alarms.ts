@@ -5,7 +5,7 @@ import { z } from "zod";
 
 export const alarmsRouter = createTRPCRouter({
     all: protectedProcedure.query(async ({ ctx }) => {
-        return await ctx.db.select().from(alarms).leftJoin(vehicles, eq(alarms.vehicle, vehicles.id)).where(eq(alarms.userId, ctx.session.user.id));
+        return await ctx.db.select().from(alarms).leftJoin(vehicles, eq(alarms.vehicle, vehicles.id)).where(eq(alarms.userId, ctx.session.user.id)).orderBy(alarms.date);
     }),
     add: protectedProcedure.input(z.object({
         keyword: z.string(),
