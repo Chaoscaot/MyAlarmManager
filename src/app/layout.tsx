@@ -17,11 +17,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} dark`}>
+      <head>
+        <meta name="apple-mobile-web-app-title" content="MyAlarm" />
+      </head>
       <body>
-      <TRPCReactProvider>
-        {children}
-        <Toaster />
-      </TRPCReactProvider>
+        <TRPCReactProvider>
+          {children}
+          <Toaster />
+        </TRPCReactProvider>
       </body>
     </html>
   );

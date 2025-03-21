@@ -77,13 +77,13 @@ function NavUser({ session }: { session: Session }) {
               </DropdownMenuItem>
               <DropdownMenuItem disabled>
                 <Bell />
-                Unvollständige Alarme
+                Unvollständige Alarmierungen
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => redirect("/api/auth/signout")}>
               <LogOut />
-              Ausloggen
+              Abmelden
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

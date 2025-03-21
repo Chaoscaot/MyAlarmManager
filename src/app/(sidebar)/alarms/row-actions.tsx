@@ -19,8 +19,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "~/components/ui/dialog";
+import EditAlarmDialog from "~/app/(sidebar)/alarms/edit-alarm";
+import {SelectAlarm} from "~/server/db/schema";
 
-function RowActions({ id }: Readonly<{ id: string }>) {
+function RowActions({ alarm }: Readonly<{ alarm: SelectAlarm }>) {
   const utils = api.useUtils();
   const deleteAlarm = api.alarms.del.useMutation({
     async onMutate(added) {
@@ -29,7 +39,7 @@ function RowActions({ id }: Readonly<{ id: string }>) {
       const prevData = utils.alarms.all.getData();
 
       utils.alarms.all.setData(undefined, (old) =>
-        old?.filter((v) => v.id !== added),
+        old?.filter((v) => v.alarms.id !== added),
       );
 
       return { prevData };
@@ -42,25 +52,38 @@ function RowActions({ id }: Readonly<{ id: string }>) {
     },
   });
 
+  const [editOpen, setEditOpen] = React.useState(false);
+
   return (
     <AlertDialog>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="icon" variant="ghost">
-            <Menu />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem disabled>
-            <Edit /> Bearbeiten
-          </DropdownMenuItem>
-          <AlertDialogTrigger asChild>
-            <DropdownMenuItem>
-              <Trash /> Löschen
-            </DropdownMenuItem>
-          </AlertDialogTrigger>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="icon" variant="ghost">
+              <Menu />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DialogTrigger asChild>
+              <DropdownMenuItem>
+                <Edit /> Bearbeiten
+              </DropdownMenuItem>
+            </DialogTrigger>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem>
+                <Trash /> Löschen
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alarmierung Bearbeiten</DialogTitle>
+            <DialogDescription>Alarmierung Bearbeiten</DialogDescription>
+          </DialogHeader>
+          <EditAlarmDialog onClose={() => setEditOpen(false)} alarm={alarm} />
+        </DialogContent>
+      </Dialog>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Alarm löschen</AlertDialogTitle>
@@ -71,7 +94,7 @@ function RowActions({ id }: Readonly<{ id: string }>) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-          <AlertDialogAction onClick={() => deleteAlarm.mutate(id)}>
+          <AlertDialogAction onClick={() => deleteAlarm.mutate(alarm.id)}>
             Löschen
           </AlertDialogAction>
         </AlertDialogFooter>

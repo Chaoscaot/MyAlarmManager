@@ -175,9 +175,9 @@ export const alarms = createTable("alarms", {
   updatedAt: timestamp("updatedAt")
     .defaultNow()
     .$onUpdate(
-      () => sql`now
-        ()`,
+      () => new Date(),
     ),
 });
 
 export type SelectAlarm = typeof alarms.$inferSelect;
+export type SelectVehicle = typeof vehicles.$inferSelect;

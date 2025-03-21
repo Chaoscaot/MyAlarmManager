@@ -5,6 +5,7 @@ import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Page() {
   await api.alarms.all.prefetch();
+  await api.vehicles.all.prefetch();
 
   return (
     <HydrateClient>
