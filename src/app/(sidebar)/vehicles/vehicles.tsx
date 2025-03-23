@@ -56,7 +56,7 @@ export default function VehiclesComponent({
           </CardHeader>
           <CardContent className="flex flex-row justify-end">
             <AlertDialog>
-              <AlertDialogTrigger>
+              <AlertDialogTrigger asChild>
                 <Button>Löschen</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
