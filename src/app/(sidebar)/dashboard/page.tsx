@@ -28,7 +28,7 @@ async function Page() {
           <CardTitle>Einsatz Tageszeiten</CardTitle>
         </CardHeader>
         <CardContent>
-          <TimeOfDayChart stats={Array.from({ length: 24 }, (_, v) => ({ timeOfDay: v, value: stats.timeOfDay.find((k) => ((+k.time + 1) % 24)  == v)?.count ?? 0 }))} />
+          <TimeOfDayChart stats={Array.from({ length: 24 }, (_, v) => ({ timeOfDay: v, value: stats.timeOfDay.find((k) => ((Number(k.time) + 1) % 24)  == v)?.count ?? 0 }))} />
         </CardContent>
       </Card>
       {JSON.stringify(stats, null, 2)}
