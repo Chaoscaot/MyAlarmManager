@@ -68,7 +68,7 @@ export const statsRouter = createTRPCRouter({
 
     const timeOfDay = await ctx.db
       .select({
-        time: sql`extract(hour from date) as time`,
+        time: sql<string>`extract(hour from date) as time`,
         count: count(),
       })
       .from(alarms)
