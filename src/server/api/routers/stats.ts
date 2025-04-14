@@ -71,21 +71,18 @@ export const statsRouter = createTRPCRouter({
       .orderBy(desc(count()))
       .limit(10);
 
-    const timeOfDay = (
-      await ctx.db
-        .select({
-          time: sql<string>`extract(hour from date) as time`,
-          count: count(),
-        })
-        .from(alarms)
-        .where(eq(alarms.userId, ctx.session.user.id))
-        .groupBy(sql`time`)
-    ).map((v) => ({
-      time: (
-        (Number(v.time) + new Date().getTimezoneOffset() - 1) %
-        24
-      ).toString(),
-      count: v.count,
+    const times = await ctx.db
+      .select({
+        time: alarms.date,
+      })
+      .from(alarms)
+      .where(eq(alarms.userId, ctx.session.user.id));
+
+    const hoursOfDay = times.map((alarm) => new Date(alarm.time!).getHours());
+
+    const timeOfDay = Array.from({ length: 24 }, (_, hour) => ({
+      time: hour - 1,
+      count: hoursOfDay.filter((h) => h === hour).length,
     }));
 
     return {
