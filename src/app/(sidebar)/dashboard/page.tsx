@@ -6,7 +6,7 @@ import {TimeOfDayChart, ZeitChart} from "~/app/(sidebar)/dashboard/zeit_chart";
 async function Page() {
   const stats = await api.stats.load();
 
-  const hoursOfDay = stats.timesOfAlarms.map((alarm) => alarm.time?.getHours());
+  const hoursOfDay = stats.timesOfAlarms.map((alarm) => Number(new Intl.DateTimeFormat("de", {hour: "2-digit"}).format(alarm.time!).substring(0, 2)));
 
   return (
     <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2">

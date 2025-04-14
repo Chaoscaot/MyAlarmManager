@@ -53,8 +53,6 @@ export function TimeOfDayChart(props: {
     },
   } satisfies ChartConfig;
 
-  console.log(props)
-
   return (
     <ChartContainer config={chartConfig}>
       <BarChart
