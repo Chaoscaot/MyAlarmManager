@@ -190,7 +190,7 @@ export default function AlarmEditor({
             name={"gone"}
             control={form.control}
           />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
             <FormField
               render={({ field }) => (
                 <FormItem>
