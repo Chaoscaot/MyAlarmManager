@@ -7,7 +7,7 @@ async function Page() {
   const stats = await api.stats.load();
 
   return (
-    <div className="p-4 grid grid-cols-2 gap-2">
+    <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2">
       <Card>
         <CardHeader>
           <CardTitle>Zwischen Einsätzen</CardTitle>

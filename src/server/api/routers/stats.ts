@@ -16,7 +16,12 @@ export const statsRouter = createTRPCRouter({
         const prevAlarm = all[index - 1];
         if (!prevAlarm?.date) return null; // Skip if previous alarm's date is invalid
         return (
-          (new Date(alarm.date).getTime() - new Date(prevAlarm.date).getTime()) / 1000 / 60 / 60 / 24
+          (new Date(alarm.date).getTime() -
+            new Date(prevAlarm.date).getTime()) /
+          1000 /
+          60 /
+          60 /
+          24
         );
       })
       .filter((time): time is number => time !== null); // Filter out null values
@@ -66,14 +71,22 @@ export const statsRouter = createTRPCRouter({
       .orderBy(desc(count()))
       .limit(10);
 
-    const timeOfDay = await ctx.db
-      .select({
-        time: sql<string>`extract(hour from date) as time`,
-        count: count(),
-      })
-      .from(alarms)
-      .where(eq(alarms.userId, ctx.session.user.id))
-      .groupBy(sql`time`);
+    const timeOfDay = (
+      await ctx.db
+        .select({
+          time: sql<string>`extract(hour from date) as time`,
+          count: count(),
+        })
+        .from(alarms)
+        .where(eq(alarms.userId, ctx.session.user.id))
+        .groupBy(sql`time`)
+    ).map((v) => ({
+      time: (
+        (Number(v.time) + new Date().getTimezoneOffset() - 1) %
+        24
+      ).toString(),
+      count: v.count,
+    }));
 
     return {
       avgTime,
