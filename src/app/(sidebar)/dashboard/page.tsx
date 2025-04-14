@@ -6,11 +6,13 @@ import {TimeOfDayChart, ZeitChart} from "~/app/(sidebar)/dashboard/zeit_chart";
 async function Page() {
   const stats = await api.stats.load();
 
+  const hoursOfDay = stats.timesOfAlarms.map((alarm) => alarm.time?.getHours());
+
   return (
     <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2">
       <Card>
         <CardHeader>
-          <CardTitle>Zwischen Einsätzen</CardTitle>
+          <CardTitle>Zeit Zwischen Einsätzen</CardTitle>
         </CardHeader>
         <CardContent>
           <ZeitChart
@@ -28,7 +30,7 @@ async function Page() {
           <CardTitle>Einsatz Tageszeiten</CardTitle>
         </CardHeader>
         <CardContent>
-          <TimeOfDayChart stats={Array.from({ length: 24 }, (_, v) => ({ timeOfDay: v, value: stats.timeOfDay.find((k) => ((Number(k.time) + 1) % 24)  == v)?.count ?? 0 }))} />
+          <TimeOfDayChart stats={Array.from({ length: 24 }, (_, v) => ({ timeOfDay: v, value: hoursOfDay.filter((h) => h === v).length ?? 0 }))} />
         </CardContent>
       </Card>
       {JSON.stringify(stats, null, 2)}

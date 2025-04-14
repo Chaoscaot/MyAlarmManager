@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { alarms, vehicles } from "~/server/db/schema";
-import {and, desc, eq} from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const alarmsRouter = createTRPCRouter({
@@ -29,7 +29,7 @@ export const alarmsRouter = createTRPCRouter({
         units: "",
         keyword: input.keyword,
         address: input.address,
-        date: input.date ? new Date(input.date) : null,
+        date: input.date,
         gone: input.gone,
         vehicle: input.vehicle,
         seat: input.seat,

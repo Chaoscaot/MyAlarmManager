@@ -78,13 +78,6 @@ export const statsRouter = createTRPCRouter({
       .from(alarms)
       .where(eq(alarms.userId, ctx.session.user.id));
 
-    const hoursOfDay = times.map((alarm) => new Date(alarm.time!).getHours());
-
-    const timeOfDay = Array.from({ length: 24 }, (_, hour) => ({
-      time: hour - 1,
-      count: hoursOfDay.filter((h) => h === hour).length,
-    }));
-
     return {
       avgTime,
       minTime,
@@ -93,7 +86,7 @@ export const statsRouter = createTRPCRouter({
       positions,
       locations,
       keywords,
-      timeOfDay,
+      timesOfAlarms: times,
     };
   }),
 });
