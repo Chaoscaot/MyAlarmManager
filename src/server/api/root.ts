@@ -1,9 +1,10 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import {alarmsRouter} from "~/server/api/routers/alarms";
-import {hooksRouter} from "~/server/api/routers/hooks";
-import {vehiclesRouter} from "~/server/api/routers/vehicles";
-import {userRouter} from "~/server/api/routers/user";
-import {statsRouter} from "~/server/api/routers/stats";
+import { alarmsRouter } from "~/server/api/routers/alarms";
+import { hooksRouter } from "~/server/api/routers/hooks";
+import { vehiclesRouter } from "~/server/api/routers/vehicles";
+import { userRouter } from "~/server/api/routers/user";
+import { statsRouter } from "~/server/api/routers/stats";
+import { agtRouter } from "./routers/agt";
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   vehicles: vehiclesRouter,
   user: userRouter,
   stats: statsRouter,
+  agt: agtRouter,
 });
 
 // export type definition of API

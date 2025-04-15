@@ -6,7 +6,7 @@ import {
     SidebarMenuItem
 } from "~/components/ui/sidebar";
 import Link from "next/link";
-import { Car, FireExtinguisher, LayoutDashboard } from "lucide-react";
+import { Activity, Car, FireExtinguisher, LayoutDashboard } from "lucide-react";
 
 function NavMain() {
     return (
@@ -33,6 +33,14 @@ function NavMain() {
                         <Link href={"/vehicles"}>
                             <Car />
                             Fahrzeuge
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link href={"/agt"}>
+                            <Activity />
+                            Tauglichkeit
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

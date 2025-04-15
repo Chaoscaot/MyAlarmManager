@@ -174,10 +174,33 @@ export const alarms = createTable("alarms", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt")
     .defaultNow()
-    .$onUpdate(
-      () => new Date(),
-    ),
+    .$onUpdate(() => new Date()),
+});
+
+export const checkTypes = pgEnum("checkTypes", [
+  "G26",
+  "STRECKE",
+  "UNTERWEISUNG",
+  "UEBUNG",
+]);
+
+export const CheckTypeValue = checkTypes.enumValues;
+export type CheckType = (typeof CheckTypeValue)[number];
+
+export const agtChecks = createTable("agt_checks", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  type: checkTypes("type").notNull(),
+  year: integer("year").notNull(),
+  month: integer("month").notNull(),
+  validity: integer("validity").notNull(),
 });
 
 export type SelectAlarm = typeof alarms.$inferSelect;
 export type SelectVehicle = typeof vehicles.$inferSelect;
+export type AgtChecks = typeof agtChecks.$inferSelect;
