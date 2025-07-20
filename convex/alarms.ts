@@ -14,6 +14,11 @@ export const all = query({
       .query("alarms")
       .filter((q) => q.eq(q.field("userId"), userId))
       .collect();
+
+    alarms.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
     return Promise.all(
       alarms.map(async (alarm) => {
         const vehicle = alarm.vehicleId
