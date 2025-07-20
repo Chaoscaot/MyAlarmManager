@@ -1,5 +1,4 @@
 import { query } from "./_generated/server";
-import { api } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
 
@@ -58,27 +57,31 @@ export const get = query({
         >,
       );
 
-    const locations = all
-      .map((alarm) => alarm.address)
-      .filter((address) => address)
-      .reduce(
-        (acc, address) => {
-          acc[address] = (acc[address] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      );
+    const locations = Object.entries(
+      all
+        .map((alarm) => alarm.address)
+        .filter((address) => address)
+        .reduce(
+          (acc, address) => {
+            acc[address] = (acc[address] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
+    ).map(([address, count]) => ({ address, count }));
 
-    const keywords = all
-      .map((alarm) => alarm.keyword)
-      .filter((keyword) => keyword)
-      .reduce(
-        (acc, keyword) => {
-          acc[keyword] = (acc[keyword] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      );
+    const keywords = Object.entries(
+      all
+        .map((alarm) => alarm.keyword)
+        .filter((keyword) => keyword)
+        .reduce(
+          (acc, keyword) => {
+            acc[keyword] = (acc[keyword] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
+    ).map(([keyword, count]) => ({ keyword, count }));
 
     const times = all
       .map((alarm) => alarm.date)
