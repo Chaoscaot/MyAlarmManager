@@ -14,14 +14,14 @@ export default function EditAlarmDialog({
 }) {
   const updateAlarm = useMutation(api.alarms.update);
 
-  function handleSubmit(date: AlarmEditorSchema | undefined): void {
+  async function handleSubmit(date: AlarmEditorSchema | undefined) {
     console.log(date);
     onClose();
     if (date) {
-      updateAlarm({
+      await updateAlarm({
         ...date,
         id: alarm._id,
-        date: date.date?.toISOString() || undefined,
+        date: date.date?.toISOString() ?? undefined,
         seat: date.seat ?? undefined,
         address: date.address ?? undefined,
         vehicle: (date.vehicle as Id<"vehicles">) ?? undefined,

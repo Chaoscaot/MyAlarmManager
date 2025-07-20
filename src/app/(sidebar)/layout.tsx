@@ -31,7 +31,7 @@ export default async function RootLayout({
     },
   );
 
-  if (!isAuthenticatedNextjs() || !session) {
+  if (!(await isAuthenticatedNextjs()) || !session) {
     redirect("/");
   }
 

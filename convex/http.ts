@@ -22,6 +22,9 @@ http.route({
       );
     }
     const token = pathParts[pathParts.length - 1];
+    if (!token) {
+      return new Response("Token is required", { status: 400 });
+    }
     const webhook = await ctx.runQuery(internal.webhooks.get, { token });
 
     if (!webhook) {

@@ -38,7 +38,7 @@ function CreateWebhookComponent() {
   const createWebhook = useMutation(api.webhooks.create);
 
   async function create() {
-    createWebhook({
+    await createWebhook({
       name: inputRef.current!.value,
     });
   }

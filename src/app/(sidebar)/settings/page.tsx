@@ -12,5 +12,5 @@ export default async function Page() {
     },
   );
 
-  return <SettingsPanel user={user!!} />;
+  return <SettingsPanel user={user!} />;
 }

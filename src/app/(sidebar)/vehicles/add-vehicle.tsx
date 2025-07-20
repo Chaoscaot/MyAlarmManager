@@ -63,9 +63,9 @@ function AddVehicleForm({
 
   const createVehicleMutation = useMutation(api.vehicles.add);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     onClose();
-    createVehicleMutation(values);
+    await createVehicleMutation(values);
   }
 
   return (

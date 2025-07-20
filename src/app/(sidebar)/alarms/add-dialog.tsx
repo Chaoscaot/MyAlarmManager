@@ -23,10 +23,10 @@ function DialogForm({
 }>) {
   const createAlarm = useMutation(api.alarms.add);
 
-  function onSubmit(values: AlarmEditorSchema | undefined) {
+  async function onSubmit(values: AlarmEditorSchema | undefined) {
     onClose();
     if (values) {
-      createAlarm({
+      await createAlarm({
         ...values,
         date: values.date?.toISOString(),
         seat: values.seat ?? undefined,

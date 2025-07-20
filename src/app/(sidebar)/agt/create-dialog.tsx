@@ -89,9 +89,9 @@ function CreateDialogForm({
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     onClose();
-    createAgt(values);
+    await createAgt(values);
     form.reset();
   }
 

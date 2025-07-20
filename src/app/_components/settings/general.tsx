@@ -20,6 +20,7 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { Doc } from "#/_generated/dataModel";
 import { api } from "#/_generated/api";
 import { useMutation } from "convex/react";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   wehrName: z.string(),
@@ -39,9 +40,9 @@ export default function GeneralSettingsPane({
 
   const updateSettings = useMutation(api.user.saveSettings);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    updateSettings(values);
+    await updateSettings(values);
   }
 
   return (
@@ -70,7 +71,7 @@ export default function GeneralSettingsPane({
                 <FormControl>
                   {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                   <Checkbox
-                    checked={field.value}
+                    checked={field.value as CheckedState}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>

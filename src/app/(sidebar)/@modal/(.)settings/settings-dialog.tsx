@@ -9,7 +9,7 @@ import {
 } from "~/components/ui/dialog";
 import SettingsPanel from "~/app/_components/settings/settings";
 import { useRouter } from "next/navigation";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 
 function SettingsDialog({ user }: Readonly<{ user: Doc<"users"> }>) {
   const router = useRouter();
