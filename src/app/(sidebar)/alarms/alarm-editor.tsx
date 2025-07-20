@@ -57,7 +57,7 @@ const seatsInFahrzeugType = {
     <>
       <SelectItem value="0">Fahrzeugführer</SelectItem>
       <SelectItem value="1">Maschinist</SelectItem>
-      <SelectItem value="3">Truppmann</SelectItem>
+      <SelectItem value="2">Truppmann</SelectItem>
     </>
   ),
   MTW: () => (
