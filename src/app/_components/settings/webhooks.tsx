@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import { api, getBaseUrl } from "~/trpc/react";
 import {
   Dialog,
   DialogClose,
@@ -30,45 +29,17 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "#/_generated/api";
 
-function CreateWebhookComponent({ invalidate }: { invalidate: () => void }) {
+function CreateWebhookComponent() {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const utils = api.useUtils();
-  const createWebhook = api.hooks.create.useMutation({
-    async onMutate(created) {
-      await utils.hooks.list.cancel();
-
-      const prevData = utils.hooks.list.getData();
-
-      utils.hooks.list.setData(undefined, (old) => [
-        ...old!,
-        {
-          id: -1,
-          name: created,
-          userId: "CREATED",
-          token: "CREATED",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ]);
-
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      utils.hooks.list.setData(undefined, ctx!.prevData);
-    },
-    async onSettled() {
-      await utils.hooks.list.invalidate();
-    },
-  });
+  const createWebhook = useMutation(api.webhooks.create);
 
   async function create() {
-    createWebhook.mutate(inputRef.current!.value, {
-      onSuccess: (result) => {
-        console.log(result);
-        invalidate();
-      },
+    createWebhook({
+      name: inputRef.current!.value,
     });
   }
 
@@ -97,29 +68,9 @@ function CreateWebhookComponent({ invalidate }: { invalidate: () => void }) {
 }
 
 export default function WebhookManager() {
-  const hooksResult = api.hooks.list.useQuery();
-  const utils = api.useUtils();
-  const hooks = hooksResult.data ?? [];
+  const hooks = useQuery(api.webhooks.list) ?? [];
 
-  const deleteHook = api.hooks.delete.useMutation({
-    async onMutate(deleted) {
-      await utils.hooks.list.cancel();
-
-      const prevData = utils.hooks.list.getData();
-
-      utils.hooks.list.setData(undefined, (old) =>
-        old!.filter((v) => v.id !== deleted),
-      );
-
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      utils.hooks.list.setData(undefined, ctx!.prevData);
-    },
-    async onSettled() {
-      await utils.hooks.list.invalidate();
-    },
-  });
+  const deleteHook = useMutation(api.webhooks.remove);
 
   return (
     <div>
@@ -133,60 +84,52 @@ export default function WebhookManager() {
         </TableHeader>
         <TableBody>
           {hooks.map((hook) => (
-            <TableRow key={hook.id}>
+            <TableRow key={hook._id}>
               <TableCell>{hook.name}</TableCell>
               <TableCell>
                 {new Intl.DateTimeFormat("de", {
                   timeStyle: "short",
                   dateStyle: "medium",
-                }).format(hook.createdAt)}
+                }).format(new Date(hook._creationTime))}
               </TableCell>
-              {hook.id === -1 ? (
-                <TableCell>
-                  <Button size="icon" variant="ghost" disabled>
-                    <Menu />
-                  </Button>
-                </TableCell>
-              ) : (
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost">
-                        <Menu />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          await navigator.clipboard.writeText(
-                            getBaseUrl() + "/api/webhook/" + hook.token,
-                          );
-                          toast("Link Kopiert!");
-                        }}
-                      >
-                        <Copy />
-                        Link Kopieren
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={async () =>
-                          deleteHook.mutate(hook.id, {
-                            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                            onSuccess: () => hooksResult.refetch(),
-                          })
-                        }
-                      >
-                        <Trash />
-                        Löschen
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              )}
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="ghost">
+                      <Menu />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(
+                          process.env.NEXT_PUBLIC_CONVEX_URL?.replace(
+                            ".cloud",
+                            ".site",
+                          ) +
+                            "/webhook/" +
+                            hook.token,
+                        );
+                        toast("Link Kopiert!");
+                      }}
+                    >
+                      <Copy />
+                      Link Kopieren
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => deleteHook({ id: hook._id })}
+                    >
+                      <Trash />
+                      Löschen
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <CreateWebhookComponent invalidate={() => utils.hooks.list.invalidate()} />
+      <CreateWebhookComponent />
     </div>
   );
 }

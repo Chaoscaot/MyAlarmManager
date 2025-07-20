@@ -23,8 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { api } from "~/trpc/react";
 import { useMemo, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "#/_generated/api";
 
 const seatsInFahrzeugType = {
   GRUPPE: () => (
@@ -73,7 +74,7 @@ const formSchema = z.object({
   address: z.string().max(255, "Adresse zu lang!").nullable(),
   date: z.date().nullable(),
   gone: z.boolean().nullable(),
-  vehicle: z.string().uuid().nullable(),
+  vehicle: z.string().nullable(),
   seat: z.number().max(16, "So viele Sitze gibt es nicht").nullable(),
 });
 
@@ -100,7 +101,7 @@ export default function AlarmEditor({
     },
   });
 
-  const fahrzeuge = api.vehicles.all.useQuery().data ?? [];
+  const fahrzeuge = useQuery(api.vehicles.all) ?? [];
   const [fahrzeugeOpen, setFahrzeugeOpen] = useState(false);
   const [sitzplatzOpen, setSitzplatzOpen] = useState(false);
 
@@ -110,14 +111,14 @@ export default function AlarmEditor({
       return null;
     }
 
-    const vehicle = fahrzeuge.find((v) => v.id === vehicleId);
+    const vehicle = fahrzeuge.find((v) => v._id === vehicleId);
 
     if (!vehicle) {
       return null;
     }
 
     return vehicle.crew;
-  }, [form.getValues().vehicle]);
+  }, [form.getValues().vehicle, fahrzeuge]);
 
   return (
     <>
@@ -190,7 +191,7 @@ export default function AlarmEditor({
             name={"gone"}
             control={form.control}
           />
-          <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <FormField
               render={({ field }) => (
                 <FormItem>
@@ -209,7 +210,7 @@ export default function AlarmEditor({
                         <SelectGroup>
                           <SelectLabel>Fahrzeuge</SelectLabel>
                           {fahrzeuge.map((v) => (
-                            <SelectItem value={v.id} key={v.id}>
+                            <SelectItem value={v._id} key={v._id}>
                               {v.name}
                             </SelectItem>
                           ))}

@@ -1,14 +1,16 @@
-import { api, HydrateClient } from "~/trpc/server";
+import { api } from "#/_generated/api";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
 import SettingsPanel from "~/app/_components/settings/settings";
-import {auth} from "~/server/auth";
 
 export default async function Page() {
-  await api.hooks.list.prefetch();
-  const session = await auth()
-
-  return (
-      <HydrateClient>
-          <SettingsPanel session={session!} />
-      </HydrateClient>
+  const user = await fetchQuery(
+    api.user.currentuser,
+    {},
+    {
+      token: await convexAuthNextjsToken(),
+    },
   );
+
+  return <SettingsPanel user={user!!} />;
 }

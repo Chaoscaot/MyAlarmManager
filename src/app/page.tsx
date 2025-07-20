@@ -1,12 +1,11 @@
-import { auth } from "~/server/auth";
-import {redirect} from "next/navigation";
+import { redirect } from "next/navigation";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
+import { LoginButton } from "./LoginButton";
 
 export default async function Home() {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/api/auth/signin");
+  if (!(await isAuthenticatedNextjs())) {
+    return <LoginButton />;
   } else {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
 }

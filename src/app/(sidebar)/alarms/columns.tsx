@@ -1,9 +1,9 @@
 "use client";
 
-import { type SelectAlarm, type SelectVehicle } from "~/server/db/schema";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "~/components/ui/checkbox";
 import RowActions from "./row-actions";
+import { Doc } from "#/_generated/dataModel";
 
 const seatInVehicleType = {
   GRUPPE: [
@@ -30,8 +30,8 @@ const seatInVehicleType = {
 };
 
 export const columns: ColumnDef<{
-  alarms: SelectAlarm;
-  vehicles: SelectVehicle | null;
+  alarms: Doc<"alarms">;
+  vehicles: Doc<"vehicles"> | null;
 }>[] = [
   {
     accessorKey: "alarms.keyword",
@@ -45,7 +45,7 @@ export const columns: ColumnDef<{
       return new Intl.DateTimeFormat("de", {
         dateStyle: "medium",
         timeStyle: "medium",
-      }).format(row.getValue("date"));
+      }).format(new Date(row.getValue("date")));
     },
   },
   {

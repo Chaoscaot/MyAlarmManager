@@ -8,58 +8,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { api } from "~/trpc/react";
 import { useState } from "react";
 import AlarmEditor, {
   type AlarmEditorSchema,
 } from "~/app/(sidebar)/alarms/alarm-editor";
+import { useMutation } from "convex/react";
+import { api } from "#/_generated/api";
+import { Id } from "#/_generated/dataModel";
 
 function DialogForm({
   onClose,
 }: Readonly<{
   onClose: () => void;
 }>) {
-  const utils = api.useUtils();
-  const createAlarm = api.alarms.add.useMutation({
-    async onMutate(added) {
-      await utils.alarms.all.cancel();
-
-      const prevData = utils.alarms.all.getData();
-
-      utils.alarms.all.setData(undefined, (old) => [
-        ...old!,
-        {
-          alarms: {
-            keyword: added.keyword,
-            address: added.address!,
-            date: added.date ? new Date(added.date) : new Date(),
-            gone: added.gone,
-            id: "-1",
-            userId: "CREATED",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            units: "",
-            vehicle: added.vehicle ?? null,
-            seat: added.seat ?? null,
-          },
-          vehicles: null,
-        },
-      ]);
-
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      utils.alarms.all.setData(undefined, ctx!.prevData);
-    },
-    async onSettled() {
-      await utils.alarms.all.invalidate();
-    },
-  });
+  const createAlarm = useMutation(api.alarms.add);
 
   function onSubmit(values: AlarmEditorSchema | undefined) {
     onClose();
     if (values) {
-      createAlarm.mutate(values);
+      createAlarm({
+        ...values,
+        date: values.date?.toISOString(),
+        seat: values.seat ?? undefined,
+        address: values.address ?? undefined,
+        vehicle: (values.vehicle as Id<"vehicles">) ?? undefined,
+        gone: values.gone ?? false,
+      });
     }
   }
 

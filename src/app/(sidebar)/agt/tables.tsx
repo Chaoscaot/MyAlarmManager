@@ -17,9 +17,10 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { groupBy } from "~/lib/utils";
-import { CheckType, CheckTypeValue } from "~/server/db/schema";
-import { api } from "~/trpc/react";
 import CreateDialog from "./create-dialog";
+import { CheckType } from "./page";
+import { useQuery } from "convex/react";
+import { api } from "#/_generated/api";
 
 export const nameMap: Record<CheckType[number], string> = {
   G26: "G26",
@@ -29,7 +30,7 @@ export const nameMap: Record<CheckType[number], string> = {
 };
 
 export default function AgtPage() {
-  const latestChecks = api.agt.latest.useQuery().data ?? [];
+  const latestChecks = useQuery(api.agt.latest) ?? [];
 
   const date = new Date();
   const isAble =
@@ -89,12 +90,12 @@ export default function AgtPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {CheckTypeValue.map((type) => {
+              {Object.keys(nameMap).map((type) => {
                 const check = nextChecks[type]?.[0];
                 if (!check) return null;
                 const isAble = date < check.nextCheckDate;
                 return (
-                  <TableRow key={check.id}>
+                  <TableRow key={check._id}>
                     <TableCell>{nameMap[type]}</TableCell>
                     <TableCell>
                       {check.month}/{check.year}

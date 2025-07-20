@@ -16,30 +16,32 @@ import type { Session } from "next-auth";
 import { Input } from "~/components/ui/input";
 import React from "react";
 import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/react";
-import {Checkbox} from "~/components/ui/checkbox";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Doc } from "#/_generated/dataModel";
+import { api } from "#/_generated/api";
+import { useMutation } from "convex/react";
 
 const formSchema = z.object({
-  wehrName: z.string().nullable(),
+  wehrName: z.string(),
   showEmail: z.boolean(),
 });
 
 export default function GeneralSettingsPane({
-  session,
-}: Readonly<{ session: Session }>) {
+  user,
+}: Readonly<{ user: Doc<"users"> }>) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      wehrName: session.user.wehrName ?? "",
-      showEmail: session.user.showEmail,
+      wehrName: user.wehrName ?? "",
+      showEmail: user.showEmail,
     },
   });
 
-  const updateSettings = api.user.saveSettings.useMutation();
+  const updateSettings = useMutation(api.user.saveSettings);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    updateSettings.mutate(values);
+    updateSettings(values);
   }
 
   return (
@@ -66,8 +68,11 @@ export default function GeneralSettingsPane({
               <FormItem>
                 <FormLabel>E-Mail Anzeigen</FormLabel>
                 <FormControl>
-                    {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -76,7 +81,9 @@ export default function GeneralSettingsPane({
           />
         </form>
       </Form>
-      <Button className="mt-4" onClick={form.handleSubmit(onSubmit)}>Speichern</Button>
+      <Button className="mt-4" onClick={form.handleSubmit(onSubmit)}>
+        Speichern
+      </Button>
     </>
   );
 }

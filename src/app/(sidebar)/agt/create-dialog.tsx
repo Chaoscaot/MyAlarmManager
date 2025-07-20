@@ -28,8 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { CheckType, CheckTypeValue } from "~/server/db/schema";
-import { api } from "~/trpc/react";
+import { CheckType } from "./page";
+import { useMutation } from "convex/react";
+import { api } from "#/_generated/api";
 
 const nameMap: Record<CheckType[number], string> = {
   G26: " G26",
@@ -62,7 +63,7 @@ export default function CreateDialog({
 }
 
 const formSchema = z.object({
-  type: z.enum(CheckTypeValue),
+  type: z.enum(["G26", "STRECKE", "UNTERWEISUNG", "UEBUNG"]),
   year: z.number().min(2000).max(2100),
   month: z.number().min(1).max(12),
   validity: z.number().min(1).max(3),
@@ -75,39 +76,7 @@ function CreateDialogForm({
   type?: CheckType;
   onClose: () => void;
 }) {
-  const utils = api.useUtils();
-  const createAgt = api.agt.create.useMutation({
-    async onMutate(added) {
-      await utils.agt.latest.cancel();
-
-      const prevData = utils.agt.latest.getData();
-
-      utils.agt.latest.setData(undefined, (old) => {
-        const newChecks =
-          old?.filter((check) => check.type != added.type) ?? [];
-
-        return [
-          ...newChecks,
-          {
-            id: "-1",
-            userId: "CREATED",
-            type: added.type,
-            year: added.year,
-            month: added.month,
-            validity: added.validity,
-          },
-        ];
-      });
-
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      utils.agt.latest.setData(undefined, ctx!.prevData);
-    },
-    async onSettled() {
-      await utils.agt.latest.invalidate();
-    },
-  });
+  const createAgt = useMutation(api.agt.add);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,7 +91,7 @@ function CreateDialogForm({
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onClose();
-    createAgt.mutate(values);
+    createAgt(values);
     form.reset();
   }
 
@@ -152,7 +121,7 @@ function CreateDialogForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {CheckTypeValue.map((value) => (
+                      {Object.keys(nameMap).map((value) => (
                         <SelectItem key={value} value={value}>
                           {nameMap[value]?.substring(1)}
                         </SelectItem>

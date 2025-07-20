@@ -23,7 +23,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { crewEnum } from "~/server/db/schema";
 import {
   Select,
   SelectContent,
@@ -33,7 +32,8 @@ import {
   SelectValue,
   SelectItem,
 } from "~/components/ui/select";
-import { api } from "~/trpc/react";
+import { useMutation } from "convex/react";
+import { api } from "#/_generated/api";
 
 const formSchema = z.object({
   name: z
@@ -44,7 +44,7 @@ const formSchema = z.object({
     .string()
     .min(2, "Der Funkrufname muss mindestens 2 lang sein")
     .max(16, "Der Funkrufname darf nicht länger als 16 sein"),
-  crew: z.enum(crewEnum.enumValues),
+  crew: z.enum(["GRUPPE", "STAFFEL", "TRUPP", "MTW"]),
 });
 
 function AddVehicleForm({
@@ -61,38 +61,11 @@ function AddVehicleForm({
     },
   });
 
-  const utils = api.useUtils();
-  const createVehicleMutation = api.vehicles.create.useMutation({
-    async onMutate(added) {
-      await utils.vehicles.all.cancel();
-
-      const prevData = utils.vehicles.all.getData();
-
-      utils.vehicles.all.setData(undefined, (old) => [
-        ...old!,
-        {
-          name: added.name,
-          callSign: added.callSign,
-          crew: added.crew,
-          id: "-1",
-          userId: "-1",
-          staffelBenchSeats: false,
-        },
-      ]);
-
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      utils.vehicles.all.setData(undefined, ctx!.prevData);
-    },
-    async onSettled() {
-      await utils.vehicles.all.invalidate();
-    },
-  });
+  const createVehicleMutation = useMutation(api.vehicles.add);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onClose();
-    createVehicleMutation.mutate(values);
+    createVehicleMutation(values);
   }
 
   return (

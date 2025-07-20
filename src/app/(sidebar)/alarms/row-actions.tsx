@@ -7,7 +7,6 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Edit, Menu, Trash } from "lucide-react";
-import { api } from "~/trpc/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,32 +24,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from "~/components/ui/dialog";
 import EditAlarmDialog from "~/app/(sidebar)/alarms/edit-alarm";
-import {SelectAlarm} from "~/server/db/schema";
+import { Doc } from "#/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { api } from "#/_generated/api";
 
-function RowActions({ alarm }: Readonly<{ alarm: SelectAlarm }>) {
-  const utils = api.useUtils();
-  const deleteAlarm = api.alarms.del.useMutation({
-    async onMutate(added) {
-      await utils.alarms.all.cancel();
-
-      const prevData = utils.alarms.all.getData();
-
-      utils.alarms.all.setData(undefined, (old) =>
-        old?.filter((v) => v.alarms.id !== added),
-      );
-
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      utils.alarms.all.setData(undefined, ctx!.prevData);
-    },
-    async onSettled() {
-      await utils.alarms.all.invalidate();
-    },
-  });
+function RowActions({ alarm }: Readonly<{ alarm: Doc<"alarms"> }>) {
+  const deleteAlarm = useMutation(api.alarms.remove);
 
   const [editOpen, setEditOpen] = React.useState(false);
 
@@ -88,13 +70,13 @@ function RowActions({ alarm }: Readonly<{ alarm: SelectAlarm }>) {
         <AlertDialogHeader>
           <AlertDialogTitle>Alarm löschen</AlertDialogTitle>
           <AlertDialogDescription>
-            Möchten Sie diesen Alarm wirklich löschen? Diese Aktion kann
-            nicht rückgängig gemacht werden.
+            Möchten Sie diesen Alarm wirklich löschen? Diese Aktion kann nicht
+            rückgängig gemacht werden.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-          <AlertDialogAction onClick={() => deleteAlarm.mutate(alarm.id)}>
+          <AlertDialogAction onClick={() => deleteAlarm({ id: alarm._id })}>
             Löschen
           </AlertDialogAction>
         </AlertDialogFooter>

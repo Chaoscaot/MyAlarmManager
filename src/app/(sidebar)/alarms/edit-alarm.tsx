@@ -1,32 +1,46 @@
-import AlarmEditor, {AlarmEditorSchema} from "~/app/(sidebar)/alarms/alarm-editor";
-import {type SelectAlarm} from "~/server/db/schema";
-import {api} from "~/trpc/react";
+import { api } from "#/_generated/api";
+import { Doc, Id } from "#/_generated/dataModel";
+import { useMutation } from "convex/react";
+import AlarmEditor, {
+  AlarmEditorSchema,
+} from "~/app/(sidebar)/alarms/alarm-editor";
 
-export default function EditAlarmDialog({ onClose, alarm }: { onClose: () => void, alarm: SelectAlarm }) {
-    const utils = api.useUtils();
-    const editAlarm = api.alarms.edit.useMutation({
-      async onSettled() {
-        await utils.alarms.all.invalidate();
-      },
-    });
+export default function EditAlarmDialog({
+  onClose,
+  alarm,
+}: {
+  onClose: () => void;
+  alarm: Doc<"alarms">;
+}) {
+  const updateAlarm = useMutation(api.alarms.update);
 
-    function handleSubmit(date: AlarmEditorSchema | undefined): void {
-        console.log(date)
-        onClose()
-        if (date) {
-            editAlarm.mutate({
-                ...date,
-                id: alarm.id,
-            })
-        }
+  function handleSubmit(date: AlarmEditorSchema | undefined): void {
+    console.log(date);
+    onClose();
+    if (date) {
+      updateAlarm({
+        ...date,
+        id: alarm._id,
+        date: date.date?.toISOString() || undefined,
+        seat: date.seat ?? undefined,
+        address: date.address ?? undefined,
+        vehicle: (date.vehicle as Id<"vehicles">) ?? undefined,
+        gone: date.gone ?? false,
+      });
     }
+  }
 
-    return (
-        <AlarmEditor onSubmit={handleSubmit} initialValue={{
-            ...alarm,
-            vehicle: alarm.vehicle,
-            seat: alarm.seat,
-            address: alarm.address
-        }} submitText="Bearbeiten" />
-    );
+  return (
+    <AlarmEditor
+      onSubmit={handleSubmit}
+      initialValue={{
+        ...alarm,
+        date: alarm.date ? new Date(alarm.date) : null,
+        vehicle: alarm.vehicleId?.toString() ?? null,
+        seat: alarm.seat,
+        address: alarm.address,
+      }}
+      submitText="Bearbeiten"
+    />
+  );
 }
