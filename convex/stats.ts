@@ -15,6 +15,8 @@ export const get = query({
       .filter((q) => q.eq(q.field("userId"), userId))
       .collect();
 
+    all.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     const result = all
       .map((alarm, index) => {
         if (index === 0 || !alarm.date) return null; // Skip invalid entries
