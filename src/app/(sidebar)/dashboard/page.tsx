@@ -76,7 +76,7 @@ async function Page() {
             </TableHeader>
             <TableBody>
               {stats.locations.map((location) => (
-                <TableRow>
+                <TableRow key={location.address}>
                   <TableCell>{location.address}</TableCell>
                   <TableCell>
                     {new Intl.NumberFormat().format(location.count)}
@@ -104,6 +104,7 @@ async function Page() {
                   count={pos.count}
                   position={pos.seat}
                   vehicleId={pos.vehicle}
+                  key={`${pos.vehicle}-${pos.seat}`}
                 />
               ))}
             </TableBody>
