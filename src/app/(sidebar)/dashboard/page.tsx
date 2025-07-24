@@ -7,6 +7,15 @@ import {
 import { fetchQuery } from "convex/nextjs";
 import { api } from "#/_generated/api";
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import VehicleName from "~/app/_components/vehicle-name";
 
 async function Page() {
   const stats = await fetchQuery(
@@ -55,7 +64,52 @@ async function Page() {
           />
         </CardContent>
       </Card>
-      {JSON.stringify(stats, null, 2)}
+      <Card>
+        <CardHeader>
+          <CardTitle>Häufigste Orte</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableHead>Ort</TableHead>
+              <TableHead>Anzahl</TableHead>
+            </TableHeader>
+            <TableBody>
+              {stats.locations.map((location) => (
+                <TableRow>
+                  <TableCell>{location.address}</TableCell>
+                  <TableCell>
+                    {new Intl.NumberFormat().format(location.count)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Häufigste Positionen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableHead>Fahrzeug</TableHead>
+              <TableHead>Position</TableHead>
+              <TableHead>Anzahl</TableHead>
+            </TableHeader>
+            <TableBody>
+              {stats.positions.map((pos) => (
+                <VehicleName
+                  count={pos.count}
+                  position={pos.seat}
+                  vehicleId={pos.vehicle}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

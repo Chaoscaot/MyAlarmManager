@@ -98,8 +98,8 @@ export default function AlarmEditor({
       address: initialValue?.address,
       date: initialValue?.date,
       gone: initialValue?.gone ?? true,
-      vehicle: initialValue?.vehicle,
-      seat: initialValue?.seat,
+      vehicle: initialValue?.vehicle ?? null,
+      seat: initialValue?.seat ?? null,
     },
   });
 

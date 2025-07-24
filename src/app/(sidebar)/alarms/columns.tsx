@@ -4,30 +4,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "~/components/ui/checkbox";
 import RowActions from "./row-actions";
 import { Doc } from "#/_generated/dataModel";
-
-const seatInVehicleType = {
-  GRUPPE: [
-    "Gruppenführer",
-    "Maschinist",
-    "Angriffstruppführer",
-    "Angriffstruppmann",
-    "Wassertruppführer",
-    "Wassertruppmann",
-    "Schlauchtruppführer",
-    "Schlauchtruppmann",
-    "Melder",
-  ],
-  STAFFEL: [
-    "Staffelführer",
-    "Maschinist",
-    "Angriffstruppführer",
-    "Angriffstruppmann",
-    "Wassertruppführer",
-    "Wassertruppmann",
-  ],
-  TRUPP: ["Fahrzeugführer", "Maschinist", "Truppmann"],
-  MTW: ["Fahrer", "Mitfahrer"],
-};
+import { seatInVehicleType } from "~/lib/seats";
 
 export const columns: ColumnDef<{
   alarms: Doc<"alarms">;

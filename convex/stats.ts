@@ -1,6 +1,6 @@
 import { query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 
 export const get = query({
   args: {},
@@ -38,26 +38,30 @@ export const get = query({
     const minTime = result.length > 0 ? Math.min(...result) : 0;
     const maxTime = result.length > 0 ? Math.max(...result) : 0;
 
-    const positions = all
-      .filter((alarm) => alarm.vehicleId && alarm.seat)
-      .map((alarm) => ({
-        vehicle: alarm.vehicleId!!,
-        seat: alarm.seat,
-      }))
-      .reduce(
-        (acc, curr) => {
-          const key = `${curr.vehicle}-${curr.seat}`;
-          if (!acc[key]) {
-            acc[key] = { ...curr, count: 0 };
-          }
-          acc[key].count++;
-          return acc;
-        },
-        {} as Record<
-          string,
-          { vehicle: Id<"vehicles">; seat: number; count: number }
-        >,
-      );
+    const positions = Object.values(
+      all
+        .filter((alarm) => alarm.vehicleId && alarm.seat)
+        .map((alarm) => ({
+          vehicle: alarm.vehicleId!,
+          seat: alarm.seat,
+        }))
+        .reduce(
+          (acc, curr) => {
+            const key = `${curr.vehicle}-${curr.seat}`;
+            if (!acc[key]) {
+              acc[key] = { ...curr, count: 0 };
+            }
+            acc[key].count++;
+            return acc;
+          },
+          {} as Record<
+            string,
+            { vehicle: Id<"vehicles">; seat: number; count: number }
+          >,
+        ),
+    );
+
+    positions.sort((a, b) => b.count - a.count);
 
     const locations = Object.entries(
       all
@@ -72,6 +76,8 @@ export const get = query({
         ),
     ).map(([address, count]) => ({ address, count }));
 
+    locations.sort((a, b) => b.count - a.count);
+
     const keywords = Object.entries(
       all
         .map((alarm) => alarm.keyword)
@@ -84,6 +90,8 @@ export const get = query({
           {} as Record<string, number>,
         ),
     ).map(([keyword, count]) => ({ keyword, count }));
+
+    keywords.sort((a, b) => b.count - a.count);
 
     const times = all
       .map((alarm) => alarm.date)

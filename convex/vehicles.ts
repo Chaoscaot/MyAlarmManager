@@ -16,6 +16,21 @@ export const all = query({
   },
 });
 
+export const get = query({
+  args: { id: v.id("vehicles") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    const vehicle = await ctx.db.get(args.id);
+    if (!vehicle || vehicle.userId !== userId) {
+      throw new Error("Vehicle not found or access denied");
+    }
+    return vehicle;
+  },
+});
+
 export const add = mutation({
   args: {
     name: v.string(),
