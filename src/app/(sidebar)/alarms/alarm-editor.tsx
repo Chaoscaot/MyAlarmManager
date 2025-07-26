@@ -107,8 +107,9 @@ export default function AlarmEditor({
   const [fahrzeugeOpen, setFahrzeugeOpen] = useState(false);
   const [sitzplatzOpen, setSitzplatzOpen] = useState(false);
 
+  const vehicleId = form.getValues().vehicle;
+
   const fahrzeugType = useMemo(() => {
-    const vehicleId = form.getValues().vehicle;
     if (!vehicleId) {
       return null;
     }
@@ -120,7 +121,7 @@ export default function AlarmEditor({
     }
 
     return vehicle.crew;
-  }, [form.getValues().vehicle, fahrzeuge]);
+  }, [vehicleId, fahrzeuge]);
 
   return (
     <>

@@ -18,9 +18,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  useFormField,
 } from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { CheckType } from "./page";
+import type { CheckType } from "./page";
 import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
 

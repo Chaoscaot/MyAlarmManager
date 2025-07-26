@@ -3,7 +3,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "~/components/ui/checkbox";
 import RowActions from "./row-actions";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 import { seatInVehicleType } from "~/lib/seats";
 
 export const columns: ColumnDef<{

@@ -21,12 +21,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { useMutation, useQuery } from "convex/react";
+import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { api } from "#/_generated/api";
 
-export default function VehiclesComponent() {
-  const vehicles = useQuery(api.vehicles.all);
-  const currentUser = useQuery(api.user.currentuser);
+export default function VehiclesComponent(props: {
+  preloadedVehicles: Preloaded<typeof api.vehicles.all>;
+  preloadedCurrentUser: Preloaded<typeof api.user.currentuser>;
+}) {
+  const vehicles = usePreloadedQuery(props.preloadedVehicles);
+  const currentUser = usePreloadedQuery(props.preloadedCurrentUser);
   const deleteVehicle = useMutation(api.vehicles.remove);
 
   return (

@@ -14,7 +14,7 @@ import AlarmEditor, {
 } from "~/app/(sidebar)/alarms/alarm-editor";
 import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
-import { Id } from "#/_generated/dataModel";
+import type { Id } from "#/_generated/dataModel";
 
 function DialogForm({
   onClose,

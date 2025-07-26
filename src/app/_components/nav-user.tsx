@@ -18,9 +18,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 function NavUser({ session }: { session: Doc<"users"> }) {

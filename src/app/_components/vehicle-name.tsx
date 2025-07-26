@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "#/_generated/api";
-import { Id } from "#/_generated/dataModel";
+import type { Id } from "#/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { TableCell, TableRow } from "~/components/ui/table";
 import { seatInVehicleType } from "~/lib/seats";

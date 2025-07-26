@@ -1,8 +1,8 @@
 import { api } from "#/_generated/api";
-import { Doc, Id } from "#/_generated/dataModel";
+import type { Doc, Id } from "#/_generated/dataModel";
 import { useMutation } from "convex/react";
 import AlarmEditor, {
-  AlarmEditorSchema,
+  type AlarmEditorSchema,
 } from "~/app/(sidebar)/alarms/alarm-editor";
 
 export default function EditAlarmDialog({

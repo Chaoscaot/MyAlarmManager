@@ -27,7 +27,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import EditAlarmDialog from "~/app/(sidebar)/alarms/edit-alarm";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
 

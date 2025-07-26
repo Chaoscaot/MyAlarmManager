@@ -1,13 +1,7 @@
 "use client";
 import { BadgeAlert, BadgeCheck } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
   TableBody,
@@ -18,9 +12,9 @@ import {
 } from "~/components/ui/table";
 import { groupBy } from "~/lib/utils";
 import CreateDialog from "./create-dialog";
-import { CheckType } from "./page";
-import { useQuery } from "convex/react";
-import { api } from "#/_generated/api";
+import type { CheckType } from "./page";
+import { type Preloaded, usePreloadedQuery } from "convex/react";
+import type { api } from "#/_generated/api";
 
 export const nameMap: Record<CheckType[number], string> = {
   G26: "G26",
@@ -29,8 +23,10 @@ export const nameMap: Record<CheckType[number], string> = {
   UEBUNG: "Übung",
 };
 
-export default function AgtPage() {
-  const latestChecks = useQuery(api.agt.latest) ?? [];
+export default function AgtPage(props: {
+  preloadedLatestChecks: Preloaded<typeof api.agt.latest>;
+}) {
+  const latestChecks = usePreloadedQuery(props.preloadedLatestChecks);
 
   const date = new Date();
   const isAble =

@@ -6,9 +6,9 @@ import {
 } from "~/components/ui/accordion";
 import WebhookManager from "./webhooks";
 import GeneralSettingsPane from "~/app/_components/settings/general";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 
-export default function SettingsPanel({
+export default async function SettingsPanel({
   user,
 }: Readonly<{ user: Doc<"users"> }>) {
   return (

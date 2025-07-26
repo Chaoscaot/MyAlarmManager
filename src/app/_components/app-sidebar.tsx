@@ -9,7 +9,7 @@ import {
 } from "~/components/ui/sidebar";
 import NavUser from "~/app/_components/nav-user";
 import NavMain from "~/app/_components/nav-main";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 
 export default function AppSidebar({
   session,

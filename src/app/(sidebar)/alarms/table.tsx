@@ -16,11 +16,13 @@ import {
 } from "~/components/ui/table";
 import { columns } from "./columns";
 import { DataTablePagination } from "~/app/_components/paginator";
-import { useQuery } from "convex/react";
-import { api } from "#/_generated/api";
+import { type Preloaded, usePreloadedQuery } from "convex/react";
+import type { api } from "#/_generated/api";
 
-export function DataTable() {
-  const alarms = useQuery(api.alarms.all, {});
+export function DataTable(props: {
+  preloadedAlarms: Preloaded<typeof api.alarms.all>;
+}) {
+  const alarms = usePreloadedQuery(props.preloadedAlarms);
 
   const table = useReactTable({
     data: alarms ?? [],

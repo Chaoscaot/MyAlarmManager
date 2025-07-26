@@ -16,10 +16,10 @@ import { Input } from "~/components/ui/input";
 import React from "react";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Doc } from "#/_generated/dataModel";
+import type { Doc } from "#/_generated/dataModel";
 import { api } from "#/_generated/api";
 import { useMutation } from "convex/react";
-import { CheckedState } from "@radix-ui/react-checkbox";
+import type { CheckedState } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   wehrName: z.string(),
