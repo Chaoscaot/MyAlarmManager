@@ -49,6 +49,21 @@ async function Page() {
           <p>
             Durchschnitt: {new Intl.NumberFormat().format(stats.avgTime)} Tage
           </p>
+          {stats.currentTime && (
+            <p>
+              <b>
+                {new Intl.NumberFormat().format(
+                  (new Date().getTime() -
+                    new Date(stats.currentTime).getTime()) /
+                    1000 /
+                    60 /
+                    60 /
+                    24,
+                )}
+              </b>{" "}
+              Tage seit letztem Einsatz
+            </p>
+          )}
         </CardContent>
       </Card>
       <Card>

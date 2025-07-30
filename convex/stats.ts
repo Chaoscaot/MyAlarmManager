@@ -37,6 +37,8 @@ export const get = query({
       result.reduce((acc, time) => acc + time, 0) / result.length || 0;
     const minTime = result.length > 0 ? Math.min(...result) : 0;
     const maxTime = result.length > 0 ? Math.max(...result) : 0;
+    const currentTime =
+      all.length > 0 ? new Date(all[all.length - 1]!.date).toISOString() : null;
 
     const positions = Object.values(
       all
@@ -101,6 +103,7 @@ export const get = query({
       avgTime,
       minTime,
       maxTime,
+      currentTime,
       times: result,
       positions,
       locations,
