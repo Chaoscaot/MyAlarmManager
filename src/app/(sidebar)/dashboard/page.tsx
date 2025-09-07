@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   TimeOfDayChart,
   ZeitChart,
+  GonePieChart,
 } from "~/app/(sidebar)/dashboard/zeit_chart";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "#/_generated/api";
@@ -77,6 +78,14 @@ async function Page() {
               value: hoursOfDay.filter((h) => h === v).length ?? 0,
             }))}
           />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Anteile: Gegangen vs. Nicht gegangen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <GonePieChart gone={stats.goneCount} notGone={stats.notGoneCount} />
         </CardContent>
       </Card>
       <Card>

@@ -99,6 +99,10 @@ export const get = query({
       .map((alarm) => alarm.date)
       .filter((date) => date !== null);
 
+    // Count gone vs not gone
+    const goneCount = all.filter((a) => a.gone === true).length;
+    const notGoneCount = all.length - goneCount;
+
     return {
       avgTime,
       minTime,
@@ -109,6 +113,8 @@ export const get = query({
       locations,
       keywords,
       timesOfAlarms: times,
+      goneCount,
+      notGoneCount,
     };
   },
 });
