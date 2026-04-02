@@ -17,6 +17,7 @@ const dateFormatter = new Intl.DateTimeFormat("de", {
   dateStyle: "medium",
   timeStyle: "medium",
 });
+const REVOKE_DELAY_MS = 1000;
 
 function escapeCsvValue(value: string) {
   return `"${value.replaceAll('"', '""')}"`;
@@ -65,13 +66,13 @@ export default function ExportAlarmsButton(props: {
 
   function exportToCsv() {
     if (!alarms.length) {
-      toast("Keine Alarme zum Exportieren vorhanden.");
+      toast.info("Keine Alarme zum Exportieren vorhanden.");
       return;
     }
 
     const csv = createCsvContent(alarms);
     const blob = new Blob([csv], {
-      type: "text/csv;charset=utf-8;",
+      type: "text/csv;charset=utf-8",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -81,7 +82,7 @@ export default function ExportAlarmsButton(props: {
     document.body.append(link);
     link.click();
     link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    window.setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
 
     toast("Alarme als CSV exportiert.");
   }
