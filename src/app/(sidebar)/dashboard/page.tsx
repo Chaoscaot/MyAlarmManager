@@ -135,6 +135,29 @@ async function Page() {
           </Table>
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Häufigste Einsatz Stichwörter</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableHead>Stichwort</TableHead>
+              <TableHead>Anzahl</TableHead>
+            </TableHeader>
+            <TableBody>
+              {stats.keywords.map((keyword) => (
+                <TableRow key={keyword.keyword}>
+                  <TableCell>{keyword.keyword}</TableCell>
+                  <TableCell>
+                    {new Intl.NumberFormat().format(keyword.count)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
