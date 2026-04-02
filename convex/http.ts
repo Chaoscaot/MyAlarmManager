@@ -47,7 +47,7 @@ http.route({
       address: "",
       date: new Date().toISOString(),
       gone: false,
-      vehicle: undefined,
+      vehicleId: undefined,
       seat: 0,
     });
 

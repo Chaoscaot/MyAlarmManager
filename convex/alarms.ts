@@ -40,7 +40,7 @@ export const create = internalMutation({
     address: v.string(),
     date: v.string(),
     gone: v.boolean(),
-    vehicle: v.optional(v.id("vehicles")),
+    vehicleId: v.optional(v.id("vehicles")),
     seat: v.number(),
   },
   handler: async (ctx, args) => await ctx.db.insert("alarms", args),
