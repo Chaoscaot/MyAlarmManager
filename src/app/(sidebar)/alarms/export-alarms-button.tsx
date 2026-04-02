@@ -13,10 +13,6 @@ type AlarmRow = {
   vehicles: Doc<"vehicles"> | null;
 };
 
-const dateFormatter = new Intl.DateTimeFormat("de", {
-  dateStyle: "medium",
-  timeStyle: "medium",
-});
 const REVOKE_DELAY_MS = 1000;
 
 function escapeCsvValue(value: string) {
@@ -38,6 +34,10 @@ function formatSeat(alarm: AlarmRow) {
 }
 
 function createCsvContent(alarms: AlarmRow[]) {
+  const dateFormatter = new Intl.DateTimeFormat("de", {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  });
   const rows = [
     ["Stichwort", "Datum", "Adresse", "Gegangen", "Fahrzeug", "Position"],
     ...alarms.map((alarm) => [
@@ -77,12 +77,15 @@ export default function ExportAlarmsButton(props: {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
-    link.href = url;
-    link.download = createFileName();
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
+    try {
+      link.href = url;
+      link.download = createFileName();
+      document.body.appendChild(link);
+      link.click();
+    } finally {
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
+    }
 
     toast.success("Alarme als CSV exportiert.");
   }
