@@ -95,8 +95,10 @@ async function Page() {
         <CardContent>
           <Table>
             <TableHeader>
-              <TableHead>Ort</TableHead>
-              <TableHead>Anzahl</TableHead>
+              <TableRow>
+                <TableHead>Ort</TableHead>
+                <TableHead>Anzahl</TableHead>
+              </TableRow>
             </TableHeader>
             <TableBody>
               {stats.locations.map((location) => (
@@ -118,9 +120,11 @@ async function Page() {
         <CardContent>
           <Table>
             <TableHeader>
-              <TableHead>Fahrzeug</TableHead>
-              <TableHead>Position</TableHead>
-              <TableHead>Anzahl</TableHead>
+              <TableRow>
+                <TableHead>Fahrzeug</TableHead>
+                <TableHead>Position</TableHead>
+                <TableHead>Anzahl</TableHead>
+              </TableRow>
             </TableHeader>
             <TableBody>
               {stats.positions.map((pos) => (
@@ -142,8 +146,10 @@ async function Page() {
         <CardContent>
           <Table>
             <TableHeader>
-              <TableHead>Stichwort</TableHead>
-              <TableHead>Anzahl</TableHead>
+              <TableRow>
+                <TableHead>Stichwort</TableHead>
+                <TableHead>Anzahl</TableHead>
+              </TableRow>
             </TableHeader>
             <TableBody>
               {stats.keywords.map((keyword) => (
