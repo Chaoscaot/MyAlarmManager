@@ -84,7 +84,7 @@ export default function ExportAlarmsButton(props: {
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
 
-    toast("Alarme als CSV exportiert.");
+    toast.success("Alarme als CSV exportiert.");
   }
 
   return (
