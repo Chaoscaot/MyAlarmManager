@@ -54,6 +54,10 @@ function createCsvContent(alarms: AlarmRow[]) {
     .join("\r\n");
 }
 
+function createFileName() {
+  return `alarms-${new Date().toISOString().slice(0, 10)}.csv`;
+}
+
 export default function ExportAlarmsButton(props: {
   preloadedAlarms: Preloaded<typeof api.alarms.all>;
 }) {
@@ -71,12 +75,13 @@ export default function ExportAlarmsButton(props: {
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const date = new Date().toISOString().slice(0, 10);
 
     link.href = url;
-    link.download = `alarms-${date}.csv`;
+    link.download = createFileName();
+    document.body.append(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
 
     toast("Alarme als CSV exportiert.");
   }
