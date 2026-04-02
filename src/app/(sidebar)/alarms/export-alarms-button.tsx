@@ -81,7 +81,7 @@ export default function ExportAlarmsButton(props: {
     document.body.append(link);
     link.click();
     link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 
     toast("Alarme als CSV exportiert.");
   }
