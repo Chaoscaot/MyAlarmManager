@@ -8,7 +8,7 @@ import WebhookManager from "./webhooks";
 import GeneralSettingsPane from "~/app/_components/settings/general";
 import type { Doc } from "#/_generated/dataModel";
 
-export default async function SettingsPanel({
+export default function SettingsPanel({
   user,
 }: Readonly<{ user: Doc<"users"> }>) {
   return (
