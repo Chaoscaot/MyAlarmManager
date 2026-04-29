@@ -8,13 +8,15 @@ import {
 } from "~/components/ui/sidebar";
 import Link from "next/link";
 import { Activity, Car, FireExtinguisher, LayoutDashboard } from "lucide-react";
+import { useIsMobile } from "~/hooks/use-mobile";
 
 function NavMain() {
   const { toggleSidebar } = useSidebar();
+  const isMobile = useIsMobile();
 
   return (
     <SidebarGroup>
-      <SidebarMenu onClick={toggleSidebar}>
+      <SidebarMenu onClick={() => isMobile && toggleSidebar()}>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
             <Link href={"/dashboard"}>
