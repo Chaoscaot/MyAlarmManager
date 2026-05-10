@@ -50,7 +50,12 @@ export function ZeitChart(props: {
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
         />
-        <Line dataKey="value" type="natural" stroke="red" strokeWidth={2} />
+        <Line
+          dataKey="value"
+          type="natural"
+          stroke="hsl(var(--destructive))"
+          strokeWidth={2}
+        />
       </LineChart>
     </ChartContainer>
   );
@@ -86,7 +91,7 @@ export function TimeOfDayChart(props: {
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
         />
-        <Bar dataKey="value" fill="red" radius={2} />
+        <Bar dataKey="value" fill="hsl(var(--destructive))" radius={2} />
       </BarChart>
     </ChartContainer>
   );
