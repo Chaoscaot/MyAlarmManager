@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 
 import { cn } from "~/lib/utils";
@@ -13,6 +13,62 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
+
+export function DatePicker({
+  date = null,
+  placeholder = "DD.MM.YYYY",
+  onChange,
+}: Readonly<{
+  date?: Date | null;
+  placeholder?: string;
+  onChange?: (date: Date | null) => void;
+}>) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  function handleDateSelect(selectedDate: Date | undefined) {
+    if (selectedDate) {
+      onChange?.(selectedDate);
+      setIsOpen(false);
+    }
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <div className="flex gap-2">
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal",
+              !date && "text-muted-foreground",
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, "dd.MM.yyyy") : <span>{placeholder}</span>}
+          </Button>
+        </PopoverTrigger>
+        {date ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => onChange?.(null)}
+          >
+            <span className="sr-only">Datum zurücksetzen</span>
+            <X className="h-4 w-4" />
+          </Button>
+        ) : null}
+      </div>
+      <PopoverContent className="w-auto p-0">
+        <Calendar
+          mode="single"
+          selected={date ?? undefined}
+          onSelect={handleDateSelect}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function DateTimePicker24h({
   onChange,

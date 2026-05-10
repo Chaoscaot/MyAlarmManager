@@ -6,7 +6,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
-import { Edit, Menu, Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,21 +23,26 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "~/components/ui/dialog";
 import EditAlarmDialog from "~/app/(sidebar)/alarms/edit-alarm";
 import type { Doc } from "#/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
+import { Edit, Eye, Menu, Trash } from "lucide-react";
+import AlarmDetail from "~/app/(sidebar)/alarms/alarm-detail";
 
-function RowActions({ alarm }: Readonly<{ alarm: Doc<"alarms"> }>) {
+function RowActions({
+  alarm,
+  vehicle,
+}: Readonly<{ alarm: Doc<"alarms">; vehicle: Doc<"vehicles"> | null }>) {
   const deleteAlarm = useMutation(api.alarms.remove);
 
   const [editOpen, setEditOpen] = React.useState(false);
+  const [detailOpen, setDetailOpen] = React.useState(false);
 
   return (
-    <AlertDialog>
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+    <>
+      <AlertDialog>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="icon" variant="ghost">
@@ -46,11 +50,12 @@ function RowActions({ alarm }: Readonly<{ alarm: Doc<"alarms"> }>) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DialogTrigger asChild>
-              <DropdownMenuItem>
-                <Edit /> Bearbeiten
-              </DropdownMenuItem>
-            </DialogTrigger>
+            <DropdownMenuItem onSelect={() => setDetailOpen(true)}>
+              <Eye /> Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+              <Edit /> Bearbeiten
+            </DropdownMenuItem>
             <AlertDialogTrigger asChild>
               <DropdownMenuItem>
                 <Trash /> Löschen
@@ -58,6 +63,36 @@ function RowActions({ alarm }: Readonly<{ alarm: Doc<"alarms"> }>) {
             </AlertDialogTrigger>
           </DropdownMenuContent>
         </DropdownMenu>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Alarm löschen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie diesen Alarm wirklich löschen? Diese Aktion kann nicht
+              rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteAlarm({ id: alarm._id })}>
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Alarmdetails</DialogTitle>
+            <DialogDescription>
+              Vollständige Informationen zu diesem Einsatz.
+            </DialogDescription>
+          </DialogHeader>
+          <AlarmDetail alarm={alarm} vehicle={vehicle} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Alarmierung Bearbeiten</DialogTitle>
@@ -66,22 +101,7 @@ function RowActions({ alarm }: Readonly<{ alarm: Doc<"alarms"> }>) {
           <EditAlarmDialog onClose={() => setEditOpen(false)} alarm={alarm} />
         </DialogContent>
       </Dialog>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Alarm löschen</AlertDialogTitle>
-          <AlertDialogDescription>
-            Möchten Sie diesen Alarm wirklich löschen? Diese Aktion kann nicht
-            rückgängig gemacht werden.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-          <AlertDialogAction onClick={() => deleteAlarm({ id: alarm._id })}>
-            Löschen
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    </>
   );
 }
 

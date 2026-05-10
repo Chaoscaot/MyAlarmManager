@@ -41,6 +41,15 @@ export default defineSchema({
     vehicleId: v.optional(v.id("vehicles")),
     seat: v.number(),
     address: v.string(),
+    notes: v.optional(v.string()),
+    editHistory: v.optional(
+      v.array(
+        v.object({
+          at: v.string(),
+          changes: v.array(v.string()),
+        }),
+      ),
+    ),
   }),
   agtChecks: defineTable({
     userId: v.id("users"),

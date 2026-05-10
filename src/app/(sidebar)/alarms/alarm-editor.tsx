@@ -16,6 +16,7 @@ import { Input } from "~/components/ui/input";
 import { DateTimePicker24h } from "~/components/ui/date-time-picker";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
+import { Textarea } from "~/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -78,6 +79,7 @@ const formSchema = z.object({
   gone: z.boolean().nullable(),
   vehicle: z.string().nullable(),
   seat: z.number().max(16, "So viele Sitze gibt es nicht").nullable(),
+  notes: z.string().max(2000, "Notizen zu lang!").nullable(),
 });
 
 export type AlarmEditorSchema = z.infer<typeof formSchema>;
@@ -100,10 +102,12 @@ export default function AlarmEditor({
       gone: initialValue?.gone ?? true,
       vehicle: initialValue?.vehicle ?? null,
       seat: initialValue?.seat ?? null,
+      notes: initialValue?.notes ?? null,
     },
   });
 
-  const fahrzeuge = useQuery(api.vehicles.all) ?? [];
+  const fahrzeugeQuery = useQuery(api.vehicles.all);
+  const fahrzeuge = useMemo(() => fahrzeugeQuery ?? [], [fahrzeugeQuery]);
   const [fahrzeugeOpen, setFahrzeugeOpen] = useState(false);
   const [sitzplatzOpen, setSitzplatzOpen] = useState(false);
 
@@ -282,6 +286,25 @@ export default function AlarmEditor({
               control={form.control}
             />
           </div>
+          <FormField
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notizen</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="Zusätzliche Informationen zum Einsatz"
+                    className="min-h-24"
+                  />
+                </FormControl>
+                <FormDescription>Optionale Notizen zum Alarm</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+            name={"notes"}
+            control={form.control}
+          />
         </form>
       </Form>
 

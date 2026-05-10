@@ -1,38 +1,88 @@
 "use client";
 
-import { type ColumnDef } from "@tanstack/react-table";
+import { type Column, type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "~/components/ui/checkbox";
 import RowActions from "./row-actions";
 import type { Doc } from "#/_generated/dataModel";
 import { seatInVehicleType } from "~/lib/seats";
+import { Button } from "~/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
 
-export const columns: ColumnDef<{
+export type AlarmRow = {
   alarms: Doc<"alarms">;
   vehicles: Doc<"vehicles"> | null;
-}>[] = [
+};
+
+type DateFilter = {
+  year?: string;
+  from?: string;
+  to?: string;
+};
+
+function SortHeader({
+  title,
+  column,
+}: Readonly<{
+  title: string;
+  column: Column<AlarmRow, unknown>;
+}>) {
+  return (
+    <Button
+      variant="ghost"
+      className="h-8 px-2"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {title}
+      <ArrowUpDown className="ml-2 size-4" />
+    </Button>
+  );
+}
+
+export const columns: ColumnDef<AlarmRow>[] = [
   {
     accessorKey: "alarms.keyword",
-    header: "Stichwort",
+    id: "keyword",
+    header: ({ column }) => <SortHeader title="Stichwort" column={column} />,
+    filterFn: (row, id, value: string) =>
+      row.getValue<string>(id).toLowerCase().includes(value.toLowerCase()),
   },
   {
     accessorKey: "alarms.date",
     id: "date",
-    header: "Datum",
+    header: ({ column }) => <SortHeader title="Datum" column={column} />,
     cell: ({ row }) => {
       return new Intl.DateTimeFormat("de", {
         dateStyle: "medium",
         timeStyle: "medium",
       }).format(new Date(row.getValue("date")));
     },
+    filterFn: (row, id, value: DateFilter) => {
+      const date = new Date(row.getValue<string>(id));
+      if (value.year && date.getFullYear().toString() !== value.year) {
+        return false;
+      }
+      if (value.from) {
+        const from = new Date(`${value.from}T00:00:00`);
+        if (date < from) return false;
+      }
+      if (value.to) {
+        const to = new Date(`${value.to}T23:59:59.999`);
+        if (date > to) return false;
+      }
+      return true;
+    },
   },
   {
     accessorKey: "alarms.address",
-    header: "Adresse",
+    id: "address",
+    header: ({ column }) => <SortHeader title="Adresse" column={column} />,
+    filterFn: (row, id, value: string) =>
+      row.getValue<string>(id).toLowerCase().includes(value.toLowerCase()),
   },
   {
     accessorKey: "alarms.gone",
     id: "gone",
-    header: "Gegangen",
+    header: ({ column }) => <SortHeader title="Gegangen" column={column} />,
     cell: ({ row }) => {
       return (
         <div className="flex">
@@ -40,11 +90,19 @@ export const columns: ColumnDef<{
         </div>
       );
     },
+    filterFn: (row, id, value: string) => {
+      if (value === "all") return true;
+      return row.getValue<boolean>(id) === (value === "true");
+    },
   },
   {
     accessorKey: "vehicles.name",
     id: "vehicleName",
-    header: "Fahrzeug",
+    header: ({ column }) => <SortHeader title="Fahrzeug" column={column} />,
+    filterFn: (row, id, value: string) =>
+      (row.getValue<string | undefined>(id) ?? "")
+        .toLowerCase()
+        .includes(value.toLowerCase()),
   },
   {
     accessorKey: "alarms.seat",
@@ -68,7 +126,12 @@ export const columns: ColumnDef<{
     accessorKey: "id",
     header: "Aktion",
     cell: ({ row }) => {
-      return <RowActions alarm={row.original.alarms} />;
+      return (
+        <RowActions
+          alarm={row.original.alarms}
+          vehicle={row.original.vehicles}
+        />
+      );
     },
   },
 ];

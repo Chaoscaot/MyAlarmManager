@@ -42,6 +42,15 @@ export const create = internalMutation({
     gone: v.boolean(),
     vehicleId: v.optional(v.id("vehicles")),
     seat: v.number(),
+    notes: v.optional(v.string()),
+    editHistory: v.optional(
+      v.array(
+        v.object({
+          at: v.string(),
+          changes: v.array(v.string()),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => await ctx.db.insert("alarms", args),
 });
@@ -54,6 +63,7 @@ export const add = mutation({
     gone: v.boolean(),
     vehicle: v.optional(v.id("vehicles")),
     seat: v.optional(v.number()),
+    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -68,10 +78,50 @@ export const add = mutation({
       gone: args.gone,
       vehicleId: args.vehicle ?? undefined,
       seat: args.seat ?? 0,
+      notes: args.notes ?? "",
+      editHistory: [
+        {
+          at: new Date().toISOString(),
+          changes: ["Alarm angelegt"],
+        },
+      ],
     };
     ctx.runMutation(internal.alarms.create, alarm);
   },
 });
+
+function collectChanges(
+  before: {
+    keyword: string;
+    address: string;
+    date: string;
+    gone: boolean;
+    vehicleId?: string;
+    seat: number;
+    notes?: string;
+  },
+  after: {
+    keyword: string;
+    address: string;
+    date: string;
+    gone: boolean;
+    vehicleId?: string;
+    seat: number;
+    notes: string;
+  },
+) {
+  const changes: string[] = [];
+
+  if (before.keyword !== after.keyword) changes.push("Stichwort geändert");
+  if (before.address !== after.address) changes.push("Adresse geändert");
+  if (before.date !== after.date) changes.push("Datum geändert");
+  if (before.gone !== after.gone) changes.push("Gegangen geändert");
+  if (before.vehicleId !== after.vehicleId) changes.push("Fahrzeug geändert");
+  if (before.seat !== after.seat) changes.push("Position geändert");
+  if ((before.notes ?? "") !== after.notes) changes.push("Notizen geändert");
+
+  return changes;
+}
 
 export const update = mutation({
   args: {
@@ -82,6 +132,7 @@ export const update = mutation({
     gone: v.boolean(),
     vehicle: v.optional(v.id("vehicles")),
     seat: v.optional(v.number()),
+    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -99,8 +150,22 @@ export const update = mutation({
       gone: args.gone,
       vehicleId: args.vehicle ?? undefined,
       seat: args.seat ?? 0,
+      notes: args.notes ?? "",
     };
-    return ctx.db.patch(args.id, up);
+    const changes = collectChanges(alarm, up);
+    if (changes.length === 0) {
+      return ctx.db.patch(args.id, up);
+    }
+    return ctx.db.patch(args.id, {
+      ...up,
+      editHistory: [
+        ...(alarm.editHistory ?? []),
+        {
+          at: new Date().toISOString(),
+          changes,
+        },
+      ],
+    });
   },
 });
 

@@ -24,6 +24,7 @@ export default function EditAlarmDialog({
         date: date.date?.toISOString() ?? undefined,
         seat: date.seat ?? undefined,
         address: date.address ?? undefined,
+        notes: date.notes ?? undefined,
         vehicle: (date.vehicle as Id<"vehicles">) ?? undefined,
         gone: date.gone ?? false,
       });
@@ -39,6 +40,7 @@ export default function EditAlarmDialog({
         vehicle: alarm.vehicleId?.toString() ?? null,
         seat: alarm.seat,
         address: alarm.address,
+        notes: alarm.notes ?? null,
       }}
       submitText="Bearbeiten"
     />

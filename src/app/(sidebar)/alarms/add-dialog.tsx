@@ -31,6 +31,7 @@ function DialogForm({
         date: values.date?.toISOString(),
         seat: values.seat ?? undefined,
         address: values.address ?? undefined,
+        notes: values.notes ?? undefined,
         vehicle: (values.vehicle as Id<"vehicles">) ?? undefined,
         gone: values.gone ?? false,
       });
