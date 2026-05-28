@@ -6,7 +6,13 @@ import RowActions from "./row-actions";
 import type { Doc } from "#/_generated/dataModel";
 import { seatInVehicleType } from "~/lib/seats";
 import { Button } from "~/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Icon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { MessageSquareWarningIcon } from "lucide-react";
 
 export type AlarmRow = {
   alarms: Doc<"alarms">;
@@ -45,6 +51,26 @@ export const columns: ColumnDef<AlarmRow>[] = [
     header: ({ column }) => <SortHeader title="Stichwort" column={column} />,
     filterFn: (row, id, value: string) =>
       row.getValue<string>(id).toLowerCase().includes(value.toLowerCase()),
+    cell: ({ row }) => {
+      const keyword = row.getValue<string>("keyword");
+      const fromWebhook = row.original.alarms.uneditedFromWebhook;
+      return (
+        <div className="flex items-center gap-2">
+          <div>{keyword}</div>
+          {fromWebhook && (
+            <Tooltip>
+              <TooltipTrigger>
+                <MessageSquareWarningIcon className="h-4 w-4 text-red-500" />
+              </TooltipTrigger>
+              <TooltipContent>
+                Dieses Alarm wurde automatisch von einem Webhook erstellt und
+                wurde seitdem nicht bearbeitet.
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "alarms.date",

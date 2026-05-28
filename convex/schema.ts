@@ -41,6 +41,7 @@ export default defineSchema({
     vehicleId: v.optional(v.id("vehicles")),
     seat: v.number(),
     address: v.string(),
+    uneditedFromWebhook: v.optional(v.boolean()),
     notes: v.optional(v.string()),
     editHistory: v.optional(
       v.array(

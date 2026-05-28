@@ -48,6 +48,7 @@ http.route({
       date: new Date().toISOString(),
       gone: false,
       vehicleId: undefined,
+      uneditedFromWebhook: true,
       seat: 0,
     });
 

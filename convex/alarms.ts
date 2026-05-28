@@ -43,6 +43,7 @@ export const create = internalMutation({
     vehicleId: v.optional(v.id("vehicles")),
     seat: v.number(),
     notes: v.optional(v.string()),
+    uneditedFromWebhook: v.boolean(),
     editHistory: v.optional(
       v.array(
         v.object({
@@ -79,6 +80,7 @@ export const add = mutation({
       vehicleId: args.vehicle ?? undefined,
       seat: args.seat ?? 0,
       notes: args.notes ?? "",
+      uneditedFromWebhook: false,
       editHistory: [
         {
           at: new Date().toISOString(),
@@ -151,6 +153,7 @@ export const update = mutation({
       vehicleId: args.vehicle ?? undefined,
       seat: args.seat ?? 0,
       notes: args.notes ?? "",
+      uneditedFromWebhook: false,
     };
     const changes = collectChanges(alarm, up);
     if (changes.length === 0) {

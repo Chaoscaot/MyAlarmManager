@@ -80,9 +80,11 @@ function NavUser({ session }: { session: Doc<"users"> }) {
                   Einstellungen
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <Bell />
-                Unvollständige Alarmierungen
+              <DropdownMenuItem asChild>
+                <Link href={"/unfinished"}>
+                  <Bell />
+                  Unvollständige Alarmierungen
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
