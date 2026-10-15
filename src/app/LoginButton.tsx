@@ -5,5 +5,9 @@ import { Button } from "~/components/ui/button";
 
 export function LoginButton() {
   const { signIn } = useAuthActions();
-  return <Button onClick={() => signIn("google")}>Sign in with Google</Button>;
+  return (
+    <Button size="lg" className="w-full" onClick={() => signIn("google")}>
+      Mit Google anmelden
+    </Button>
+  );
 }
