@@ -29,6 +29,10 @@ import {
 import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "#/_generated/api";
+import { fieldLabelClass } from "./logbook";
+
+const sectionClass =
+  "font-display text-base leading-none font-semibold tracking-wide uppercase";
 
 const seatsInFahrzeugType = {
   GRUPPE: () => (
@@ -87,7 +91,7 @@ export type AlarmEditorSchema = z.infer<typeof formSchema>;
 export default function AlarmEditor({
   onSubmit,
   initialValue,
-  submitText = "Anlegen",
+  submitText = "Einsatz speichern",
 }: Readonly<{
   onSubmit: (date: AlarmEditorSchema | undefined) => void;
   initialValue?: AlarmEditorSchema | undefined;
@@ -130,175 +134,205 @@ export default function AlarmEditor({
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Stichwort</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="F1" />
-                </FormControl>
-                <FormDescription>Das Einsatz Stichwort, F1, H2</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-            name={"keyword"}
-            control={form.control}
-          />
-          <FormField
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Adresse</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    placeholder="Musterstraße 1"
-                  />
-                </FormControl>
-                <FormDescription>Adresse des Einsatzes</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-            name={"address"}
-            control={form.control}
-          />
-          <FormField
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Alamierung</FormLabel>
-                <FormControl>
-                  <DateTimePicker24h
-                    date={field.value}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormDescription>Zeitpunkt der Alamierung</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-            name={"date"}
-            control={form.control}
-          />
-          <FormField
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex gap-2">
-                  <FormLabel>Gegangen</FormLabel>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <fieldset className="space-y-4">
+            <legend className={`${sectionClass} mb-4`}>Einsatz</legend>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)]">
+              <FormField
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClass}>Stichwort</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="F2"
+                        autoComplete="off"
+                        className="font-display text-lg font-semibold tracking-wide uppercase"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+                name={"keyword"}
+                control={form.control}
+              />
+              <FormField
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClass}>
+                      Alarmierung
+                    </FormLabel>
+                    <FormControl>
+                      <DateTimePicker24h
+                        date={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+                name={"date"}
+                control={form.control}
+              />
+            </div>
+            <FormField
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabelClass}>Einsatzort</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="Musterstraße 1, Gießen"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              name={"address"}
+              control={form.control}
+            />
+          </fieldset>
+
+          <fieldset className="space-y-4">
+            <legend className={`${sectionClass} mb-4`}>Besetzung</legend>
+            <FormField
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start gap-3">
                   <FormControl>
                     <Checkbox
                       checked={field.value ?? false}
                       onCheckedChange={field.onChange}
+                      className="mt-0.5"
                     />
                   </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-            name={"gone"}
-            control={form.control}
-          />
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            <FormField
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fahrzeug</FormLabel>
-                  <FormControl>
-                    <Select
-                      value={field.value ?? undefined}
-                      onValueChange={field.onChange}
-                      open={fahrzeugeOpen}
-                      onOpenChange={setFahrzeugeOpen}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Fahrzeug auswählen..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Fahrzeuge</SelectLabel>
-                          {fahrzeuge.map((v) => (
-                            <SelectItem value={v._id} key={v._id}>
-                              {v.name}
-                            </SelectItem>
-                          ))}
-                          <div className="flex justify-end">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                field.onChange(null);
-                                setFahrzeugeOpen(false);
-                              }}
-                            >
-                              Zurücksetzen
-                            </Button>
-                          </div>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
+                  <div className="grid gap-1">
+                    <FormLabel>Gegangen</FormLabel>
+                    <FormDescription className="text-xs">
+                      Sie sind zu diesem Einsatz ausgerückt.
+                    </FormDescription>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
-              name={"vehicle"}
+              name={"gone"}
               control={form.control}
             />
-            <FormField
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Position</FormLabel>
-                  <FormControl>
-                    <Select
-                      value={field.value?.toString()}
-                      onValueChange={(v) => field.onChange(Number.parseInt(v))}
-                      open={sitzplatzOpen}
-                      onOpenChange={setSitzplatzOpen}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sitzplatz auswählen..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Position</SelectLabel>
-                          {fahrzeugType
-                            ? seatsInFahrzeugType[fahrzeugType]()
-                            : null}
-                          <div className="flex justify-end">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                field.onChange(null);
-                                setSitzplatzOpen(false);
-                              }}
-                            >
-                              Zurücksetzen
-                            </Button>
-                          </div>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-              name={"seat"}
-              control={form.control}
-            />
-          </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClass}>Fahrzeug</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value ?? undefined}
+                        onValueChange={field.onChange}
+                        open={fahrzeugeOpen}
+                        onOpenChange={setFahrzeugeOpen}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Fahrzeug wählen" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Fahrzeuge</SelectLabel>
+                            {fahrzeuge.map((v) => (
+                              <SelectItem value={v._id} key={v._id}>
+                                {v.name}
+                              </SelectItem>
+                            ))}
+                            <div className="flex justify-end border-t p-1 pt-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  field.onChange(null);
+                                  setFahrzeugeOpen(false);
+                                }}
+                              >
+                                Auswahl entfernen
+                              </Button>
+                            </div>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+                name={"vehicle"}
+                control={form.control}
+              />
+              <FormField
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={fieldLabelClass}>Position</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value?.toString()}
+                        onValueChange={(v) =>
+                          field.onChange(Number.parseInt(v))
+                        }
+                        open={sitzplatzOpen}
+                        onOpenChange={setSitzplatzOpen}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder={
+                              fahrzeugType
+                                ? "Position wählen"
+                                : "Zuerst Fahrzeug wählen"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Position</SelectLabel>
+                            {fahrzeugType
+                              ? seatsInFahrzeugType[fahrzeugType]()
+                              : null}
+                            <div className="flex justify-end border-t p-1 pt-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  field.onChange(null);
+                                  setSitzplatzOpen(false);
+                                }}
+                              >
+                                Auswahl entfernen
+                              </Button>
+                            </div>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+                name={"seat"}
+                control={form.control}
+              />
+            </div>
+          </fieldset>
+
           <FormField
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Notizen</FormLabel>
+                <FormLabel className={sectionClass}>Notizen</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     value={field.value ?? ""}
-                    placeholder="Zusätzliche Informationen zum Einsatz"
+                    placeholder="Lage, Maßnahmen, Besonderheiten"
                     className="min-h-24"
                   />
                 </FormControl>
-                <FormDescription>Optionale Notizen zum Alarm</FormDescription>
+                <FormDescription className="text-xs">
+                  Optional, nur für Sie sichtbar.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -308,11 +342,17 @@ export default function AlarmEditor({
         </form>
       </Form>
 
-      <div className="ml-auto space-x-4">
-        <Button onClick={() => onSubmit(undefined)} variant="ghost">
+      <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
+        <Button
+          type="button"
+          onClick={() => onSubmit(undefined)}
+          variant="ghost"
+        >
           Abbrechen
         </Button>
-        <Button onClick={form.handleSubmit(onSubmit)}>{submitText}</Button>
+        <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+          {submitText}
+        </Button>
       </div>
     </>
   );

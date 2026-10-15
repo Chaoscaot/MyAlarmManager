@@ -66,7 +66,7 @@ export default function ExportAlarmsButton(props: {
 
   function exportToCsv() {
     if (!alarms.length) {
-      toast.info("Keine Alarme zum Exportieren vorhanden.");
+      toast.info("Keine Einsätze zum Exportieren vorhanden.");
       return;
     }
 
@@ -87,13 +87,13 @@ export default function ExportAlarmsButton(props: {
       window.setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
     }
 
-    toast.success("Alarme als CSV exportiert.");
+    toast.success("Einsätze als CSV exportiert.");
   }
 
   return (
     <Button onClick={exportToCsv} variant="outline">
-      <Download />
-      Alarme exportieren
+      <Download aria-hidden />
+      CSV exportieren
     </Button>
   );
 }

@@ -4,6 +4,7 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
@@ -20,9 +21,14 @@ function SettingsDialog({ user }: Readonly<{ user: Doc<"users"> }>) {
       open={true}
       onOpenChange={(to) => !to && router.back()}
     >
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] gap-6 overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle className="font-display text-3xl leading-none font-bold tracking-wide uppercase">
+            Einstellungen
+          </DialogTitle>
+          <DialogDescription>
+            Funkrufname, Anzeige und Anbindung an Alamos
+          </DialogDescription>
         </DialogHeader>
         <SettingsPanel user={user} />
       </DialogContent>

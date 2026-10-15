@@ -1,18 +1,34 @@
 "use client";
 
-import { type Column, type ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "~/components/ui/checkbox";
+import {
+  type Column,
+  type ColumnDef,
+  type RowData,
+} from "@tanstack/react-table";
 import RowActions from "./row-actions";
 import type { Doc } from "#/_generated/dataModel";
-import { seatInVehicleType } from "~/lib/seats";
-import { Button } from "~/components/ui/button";
-import { ArrowUpDown, Icon } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { MessageSquareWarningIcon } from "lucide-react";
+import {
+  AlarmTime,
+  GoneMark,
+  Placeholder,
+  Stichwort,
+  UnfinishedMark,
+  seatName,
+} from "./logbook";
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Extra classes for both the header and the body cell of this column. */
+    className?: string;
+  }
+}
 
 export type AlarmRow = {
   alarms: Doc<"alarms">;
@@ -32,15 +48,35 @@ function SortHeader({
   title: string;
   column: Column<AlarmRow, unknown>;
 }>) {
+  const sorted = column.getIsSorted();
+  const Icon =
+    sorted === "asc" ? ArrowUp : sorted === "desc" ? ArrowDown : ChevronsUpDown;
+
   return (
-    <Button
-      variant="ghost"
-      className="h-8 px-2"
-      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    <button
+      type="button"
+      className="hover:text-foreground focus-visible:ring-ring/50 -mx-1.5 inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-1.5 uppercase outline-none focus-visible:ring-[3px]"
+      onClick={() => column.toggleSorting(sorted === "asc")}
     >
       {title}
-      <ArrowUpDown className="ml-2 size-4" />
-    </Button>
+      <Icon
+        aria-hidden
+        className={sorted ? "size-3.5" : "size-3.5 opacity-50"}
+      />
+    </button>
+  );
+}
+
+export function WebhookHint() {
+  return (
+    <Tooltip>
+      <TooltipTrigger className="focus-visible:ring-ring/50 w-fit rounded-sm outline-none focus-visible:ring-[3px]">
+        <UnfinishedMark />
+      </TooltipTrigger>
+      <TooltipContent>
+        Vom Melder angelegt und noch nicht ergänzt.
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -51,37 +87,19 @@ export const columns: ColumnDef<AlarmRow>[] = [
     header: ({ column }) => <SortHeader title="Stichwort" column={column} />,
     filterFn: (row, id, value: string) =>
       row.getValue<string>(id).toLowerCase().includes(value.toLowerCase()),
-    cell: ({ row }) => {
-      const keyword = row.getValue<string>("keyword");
-      const fromWebhook = row.original.alarms.uneditedFromWebhook;
-      return (
-        <div className="flex items-center gap-2">
-          <div>{keyword}</div>
-          {fromWebhook && (
-            <Tooltip>
-              <TooltipTrigger>
-                <MessageSquareWarningIcon className="h-4 w-4 text-red-500" />
-              </TooltipTrigger>
-              <TooltipContent>
-                Dieses Alarm wurde automatisch von einem Webhook erstellt und
-                wurde seitdem nicht bearbeitet.
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex flex-col items-start gap-1">
+        <Stichwort keyword={row.getValue<string>("keyword")} />
+        {row.original.alarms.uneditedFromWebhook && <WebhookHint />}
+      </div>
+    ),
+    meta: { className: "w-40" },
   },
   {
     accessorKey: "alarms.date",
     id: "date",
-    header: ({ column }) => <SortHeader title="Datum" column={column} />,
-    cell: ({ row }) => {
-      return new Intl.DateTimeFormat("de", {
-        dateStyle: "medium",
-        timeStyle: "medium",
-      }).format(new Date(row.getValue("date")));
-    },
+    header: ({ column }) => <SortHeader title="Alarmierung" column={column} />,
+    cell: ({ row }) => <AlarmTime date={row.getValue<string>("date")} />,
     filterFn: (row, id, value: DateFilter) => {
       const date = new Date(row.getValue<string>(id));
       if (value.year && date.getFullYear().toString() !== value.year) {
@@ -97,67 +115,68 @@ export const columns: ColumnDef<AlarmRow>[] = [
       }
       return true;
     },
+    meta: { className: "w-36" },
   },
   {
     accessorKey: "alarms.address",
     id: "address",
-    header: ({ column }) => <SortHeader title="Adresse" column={column} />,
-    filterFn: (row, id, value: string) =>
-      row.getValue<string>(id).toLowerCase().includes(value.toLowerCase()),
-  },
-  {
-    accessorKey: "alarms.gone",
-    id: "gone",
-    header: ({ column }) => <SortHeader title="Gegangen" column={column} />,
+    header: ({ column }) => <SortHeader title="Einsatzort" column={column} />,
     cell: ({ row }) => {
-      return (
-        <div className="flex">
-          <Checkbox checked={row.getValue("gone")} />
-        </div>
+      const address = row.getValue<string>("address");
+      return address ? (
+        <span className="block max-w-[32ch] truncate" title={address}>
+          {address}
+        </span>
+      ) : (
+        <Placeholder>Keine Adresse</Placeholder>
       );
     },
-    filterFn: (row, id, value: string) => {
-      if (value === "all") return true;
-      return row.getValue<boolean>(id) === (value === "true");
-    },
+    filterFn: (row, id, value: string) =>
+      row.getValue<string>(id).toLowerCase().includes(value.toLowerCase()),
   },
   {
     accessorKey: "vehicles.name",
     id: "vehicleName",
     header: ({ column }) => <SortHeader title="Fahrzeug" column={column} />,
+    cell: ({ row }) => {
+      const vehicle = row.original.vehicles;
+      if (!vehicle) {
+        return <Placeholder>Kein Fahrzeug</Placeholder>;
+      }
+      const seat = seatName(row.original.alarms, vehicle);
+      return (
+        <div className="flex flex-col">
+          <span className="font-display text-base leading-tight font-semibold tracking-wide uppercase">
+            {vehicle.name}
+          </span>
+          {seat && (
+            <span className="text-muted-foreground text-xs">{seat}</span>
+          )}
+        </div>
+      );
+    },
     filterFn: (row, id, value: string) =>
       (row.getValue<string | undefined>(id) ?? "")
         .toLowerCase()
         .includes(value.toLowerCase()),
   },
   {
-    accessorKey: "alarms.seat",
-    id: "seat",
-    header: "Position",
-    cell: ({ row }) => {
-      const type = row.original.vehicles?.crew;
-
-      if (!type) {
-        return null;
-      }
-
-      if (row.original.alarms.seat === null) {
-        return null;
-      }
-
-      return seatInVehicleType[type][row.original.alarms.seat];
+    accessorKey: "alarms.gone",
+    id: "gone",
+    header: ({ column }) => <SortHeader title="Teilnahme" column={column} />,
+    cell: ({ row }) => <GoneMark gone={row.getValue<boolean>("gone")} />,
+    filterFn: (row, id, value: string) => {
+      if (value === "all") return true;
+      return row.getValue<boolean>(id) === (value === "true");
     },
+    meta: { className: "w-36" },
   },
   {
-    accessorKey: "id",
-    header: "Aktion",
-    cell: ({ row }) => {
-      return (
-        <RowActions
-          alarm={row.original.alarms}
-          vehicle={row.original.vehicles}
-        />
-      );
-    },
+    id: "actions",
+    header: () => <span className="sr-only">Aktionen</span>,
+    cell: ({ row }) => (
+      <RowActions alarm={row.original.alarms} vehicle={row.original.vehicles} />
+    ),
+    meta: { className: "w-12 text-right" },
   },
 ];

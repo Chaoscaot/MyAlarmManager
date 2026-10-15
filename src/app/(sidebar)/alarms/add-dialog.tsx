@@ -1,9 +1,11 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -42,10 +44,11 @@ function DialogForm({
     <>
       <DialogHeader>
         <DialogTitle>Einsatz anlegen</DialogTitle>
+        <DialogDescription>
+          Tragen Sie einen Einsatz nach, der nicht über den Melder kam.
+        </DialogDescription>
       </DialogHeader>
-      <Dialog>
-        <AlarmEditor onSubmit={onSubmit} />
-      </Dialog>
+      <AlarmEditor onSubmit={onSubmit} submitText="Einsatz anlegen" />
     </>
   );
 }
@@ -56,9 +59,12 @@ export default function CreateAlarmDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Einsatz Hinzufügen</Button>
+        <Button>
+          <Plus aria-hidden />
+          Einsatz hinzufügen
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl">
         <DialogForm onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>

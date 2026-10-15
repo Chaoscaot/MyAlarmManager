@@ -5,9 +5,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,8 +31,27 @@ import EditAlarmDialog from "~/app/(sidebar)/alarms/edit-alarm";
 import type { Doc } from "#/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
-import { Edit, Eye, Menu, Trash } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import AlarmDetail from "~/app/(sidebar)/alarms/alarm-detail";
+import { formatDay, formatLong, formatTime, Stichwort } from "./logbook";
+
+export function EditAlarmContent({
+  alarm,
+  onClose,
+}: Readonly<{ alarm: Doc<"alarms">; onClose: () => void }>) {
+  return (
+    <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl">
+      <DialogHeader>
+        <DialogTitle>Einsatz bearbeiten</DialogTitle>
+        <DialogDescription className="tabular-nums">
+          {alarm.keyword} · {formatDay(alarm.date)}, {formatTime(alarm.date)}{" "}
+          Uhr
+        </DialogDescription>
+      </DialogHeader>
+      <EditAlarmDialog onClose={onClose} alarm={alarm} />
+    </DialogContent>
+  );
+}
 
 function RowActions({
   alarm,
@@ -47,61 +67,86 @@ function RowActions({
       <AlertDialog>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost">
-              <Menu />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground size-8"
+            >
+              <MoreHorizontal aria-hidden />
+              <span className="sr-only">Aktionen für {alarm.keyword}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end" className="min-w-44">
             <DropdownMenuItem onSelect={() => setDetailOpen(true)}>
-              <Eye /> Details
+              <Eye /> Details ansehen
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setEditOpen(true)}>
-              <Edit /> Bearbeiten
+              <Pencil /> Bearbeiten
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <AlertDialogTrigger asChild>
-              <DropdownMenuItem>
-                <Trash /> Löschen
+              <DropdownMenuItem variant="destructive">
+                <Trash2 /> Löschen
               </DropdownMenuItem>
             </AlertDialogTrigger>
           </DropdownMenuContent>
         </DropdownMenu>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Alarm löschen</AlertDialogTitle>
+            <AlertDialogTitle>Einsatz löschen?</AlertDialogTitle>
             <AlertDialogDescription>
-              Möchten Sie diesen Alarm wirklich löschen? Diese Aktion kann nicht
-              rückgängig gemacht werden.
+              Der Einsatz{" "}
+              <span className="text-foreground">{alarm.keyword}</span> vom{" "}
+              <span className="tabular-nums">
+                {formatDay(alarm.date)}, {formatTime(alarm.date)} Uhr
+              </span>{" "}
+              wird dauerhaft aus Ihrem Einsatzbuch entfernt. Das lässt sich
+              nicht rückgängig machen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteAlarm({ id: alarm._id })}>
-              Löschen
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={() => deleteAlarm({ id: alarm._id })}
+            >
+              Einsatz löschen
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Alarmdetails</DialogTitle>
-            <DialogDescription>
-              Vollständige Informationen zu diesem Einsatz.
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader className="gap-3">
+            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.14em] uppercase">
+              Einsatz
+            </p>
+            <DialogTitle asChild>
+              <h2>
+                <Stichwort
+                  keyword={alarm.keyword}
+                  className="border-l-[3px] pl-3 text-3xl leading-none font-bold"
+                />
+              </h2>
+            </DialogTitle>
+            <DialogDescription className="tabular-nums">
+              {formatLong(alarm.date)}
             </DialogDescription>
           </DialogHeader>
-          <AlarmDetail alarm={alarm} vehicle={vehicle} />
+          <AlarmDetail
+            alarm={alarm}
+            vehicle={vehicle}
+            onEdit={() => {
+              setDetailOpen(false);
+              setEditOpen(true);
+            }}
+          />
         </DialogContent>
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alarmierung Bearbeiten</DialogTitle>
-            <DialogDescription>Alarmierung Bearbeiten</DialogDescription>
-          </DialogHeader>
-          <EditAlarmDialog onClose={() => setEditOpen(false)} alarm={alarm} />
-        </DialogContent>
+        <EditAlarmContent alarm={alarm} onClose={() => setEditOpen(false)} />
       </Dialog>
     </>
   );

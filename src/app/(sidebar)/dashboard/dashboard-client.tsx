@@ -5,31 +5,15 @@ import { type Preloaded, usePreloadedQuery } from "convex/react";
 import type { api } from "#/_generated/api";
 import type { Doc, Id } from "#/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Progress } from "~/components/ui/progress";
+import PageHeader from "~/app/_components/page-header";
+import VehicleName from "~/app/_components/vehicle-name";
+import AlarmPager from "~/app/(sidebar)/dashboard/alarm-pager";
+import { RankedCard, RankedRow } from "~/app/(sidebar)/dashboard/ranked-list";
 import {
-  GonePieChart,
+  GoneSplit,
   TimeOfDayChart,
   ZeitChart,
 } from "~/app/(sidebar)/dashboard/zeit_chart";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import VehicleName from "~/app/_components/vehicle-name";
-import {
-  Activity,
-  CalendarClock,
-  Clock3,
-  MapPin,
-  Radio,
-  Target,
-  TrendingUp,
-} from "lucide-react";
 
 type Alarm = Doc<"alarms">;
 
@@ -38,11 +22,6 @@ const dayFormatter = new Intl.DateTimeFormat("de", {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
-});
-
-const timeFormatter = new Intl.DateTimeFormat("de", {
-  hour: "2-digit",
-  minute: "2-digit",
 });
 
 const numberFormatter = new Intl.NumberFormat("de", {
@@ -139,14 +118,12 @@ function getRankedStringValue(alarms: Alarm[], key: "keyword" | "address") {
         const recencyScore = 1 / (ageInDays / 30 + 1);
         const recentScore = index >= alarms.length - 10 ? 0.75 : 0;
 
-        if (!acc[value]) {
-          acc[value] = {
-            value,
-            count: 0,
-            lastSeen: alarm.date,
-            score: 0,
-          };
-        }
+        acc[value] ??= {
+          value,
+          count: 0,
+          lastSeen: alarm.date,
+          score: 0,
+        };
 
         acc[value].count++;
         acc[value].lastSeen =
@@ -364,9 +341,7 @@ function calculateStats(alarms: Alarm[]) {
       .reduce(
         (acc, curr) => {
           const key = `${curr.vehicle}-${curr.seat}`;
-          if (!acc[key]) {
-            acc[key] = { ...curr, count: 0 };
-          }
+          acc[key] ??= { ...curr, count: 0 };
           acc[key].count++;
           return acc;
         },
@@ -430,75 +405,57 @@ function calculateStats(alarms: Alarm[]) {
   };
 }
 
-function StatTile({
+const monthFormatter = new Intl.DateTimeFormat("de", {
+  month: "long",
+  year: "numeric",
+});
+
+function KeyFigure({
   label,
   value,
+  unit,
   helper,
-  icon: Icon,
 }: Readonly<{
   label: string;
   value: string;
+  unit?: string;
   helper: string;
-  icon: React.ComponentType<{ className?: string }>;
 }>) {
   return (
-    <Card className="overflow-hidden border-l-4 border-l-red-600">
-      <CardContent className="flex items-start justify-between gap-4 p-4">
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-sm">{label}</p>
-          <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
-          <p className="text-muted-foreground mt-1 truncate text-xs">
-            {helper}
-          </p>
-        </div>
-        <div className="rounded-md bg-red-50 p-2 text-red-700 dark:bg-red-950/40 dark:text-red-300">
-          <Icon className="size-5" />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="bg-background flex min-w-0 flex-col justify-center px-4 py-4 md:px-5">
+      <dt className="text-muted-foreground text-sm">{label}</dt>
+      <dd className="mt-1">
+        <span className="font-display text-4xl leading-none font-semibold tabular-nums md:text-5xl">
+          {value}
+        </span>
+        {unit ? (
+          <span className="text-muted-foreground ml-1.5 text-sm">{unit}</span>
+        ) : null}
+      </dd>
+      <dd className="text-muted-foreground mt-1.5 truncate text-xs tabular-nums">
+        {helper}
+      </dd>
+    </div>
   );
 }
 
-function RankedTable({
+function ChartCard({
   title,
-  rows,
-  firstColumn,
+  description,
+  children,
 }: Readonly<{
   title: string;
-  rows: { label: string; count: number }[];
-  firstColumn: string;
+  description: string;
+  children: React.ReactNode;
 }>) {
-  const max = Math.max(...rows.map((row) => row.count), 1);
-
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
+    <Card className="min-w-0 gap-4">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <p className="text-muted-foreground text-sm">{description}</p>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{firstColumn}</TableHead>
-              <TableHead className="w-28 text-right">Anzahl</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.slice(0, 6).map((row) => (
-              <TableRow key={row.label}>
-                <TableCell>
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <span className="truncate font-medium">{row.label}</span>
-                    <Progress value={(row.count / max) * 100} className="h-1" />
-                  </div>
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {numberFormatter.format(row.count)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <CardContent className="pr-3 pl-1 md:pr-4 md:pl-2">
+        {children}
       </CardContent>
     </Card>
   );
@@ -511,6 +468,17 @@ export default function DashboardClient({
 }>) {
   const alarms = usePreloadedQuery(preloadedAlarms);
   const stats = useMemo(() => calculateStats(alarms ?? []), [alarms]);
+  const lastAlarm = useMemo(
+    () =>
+      (alarms ?? []).reduce<Alarm | null>(
+        (latest, alarm) =>
+          !latest || new Date(alarm.date) > new Date(latest.date)
+            ? alarm
+            : latest,
+        null,
+      ),
+    [alarms],
+  );
   const hoursOfDay = stats.timesOfAlarms.map((alarm) =>
     Number(
       new Intl.DateTimeFormat("de", { hour: "2-digit" })
@@ -520,229 +488,179 @@ export default function DashboardClient({
   );
   const attendedRate =
     stats.totalCount > 0 ? (stats.goneCount / stats.totalCount) * 100 : 0;
-  const lastAlarmAge = daysSince(stats.currentTime);
-  const predictedKeyword =
-    stats.prediction.predictedKeyword?.value ?? "Unbekannt";
-  const predictedAddress =
-    stats.prediction.predictedAddress?.value ?? "Keine Adresse erkannt";
+  const lastAlarmAge = Math.floor(daysSince(stats.currentTime));
+  const firstAlarmDate = stats.timesOfAlarms[0];
+  const hasIntervals = stats.times.length > 0;
+  const placeholder = "–";
+
+  const meta =
+    stats.totalCount === 0
+      ? "Noch keine Einsätze erfasst"
+      : `${numberFormatter.format(stats.totalCount)} ${stats.totalCount === 1 ? "Einsatz" : "Einsätze"} seit ${monthFormatter.format(new Date(firstAlarmDate!))}`;
+
+  const locationMax = stats.locations[0]?.count ?? 1;
+  const keywordMax = stats.keywords[0]?.count ?? 1;
+  const positionMax = stats.positions[0]?.count ?? 1;
 
   return (
-    <div className="space-y-4 p-4">
-      <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <StatTile
-          label="Aufgezeichnete Einsätze"
-          value={numberFormatter.format(stats.totalCount)}
-          helper="Basis für Statistik und Prognose"
-          icon={Radio}
-        />
-        <StatTile
-          label="Durchschnittlicher Abstand"
-          value={`${numberFormatter.format(stats.avgTime)} Tage`}
-          helper={`Spanne ${numberFormatter.format(stats.minTime)} bis ${numberFormatter.format(stats.maxTime)} Tage`}
-          icon={TrendingUp}
-        />
-        <StatTile
-          label="Seit letztem Einsatz"
-          value={`${numberFormatter.format(lastAlarmAge)} Tage`}
-          helper={
-            stats.currentTime
-              ? dayFormatter.format(new Date(stats.currentTime))
-              : "Noch kein Einsatz"
-          }
-          icon={Clock3}
-        />
-        <StatTile
-          label="Gegangen"
-          value={`${numberFormatter.format(attendedRate)} %`}
-          helper={`${numberFormatter.format(stats.goneCount)} von ${numberFormatter.format(stats.totalCount)}`}
-          icon={Activity}
-        />
-      </section>
+    <>
+      <PageHeader title="Statistiken" meta={meta} />
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_0.9fr]">
-        <Card className="border-red-200 dark:border-red-950">
-          <CardHeader className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle className="flex items-center gap-2">
-                <CalendarClock className="size-5 text-red-600" />
-                Prognose nächster Einsatz
-              </CardTitle>
-              <Badge variant="secondary">
-                {stats.prediction.confidence}% Modellvertrauen
-              </Badge>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              Berechnet aus Abständen, Wochentagen, Uhrzeiten, Stichwörtern und
-              Adressen der bisherigen Einsätze.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-              {stats.prediction.dates.map((prediction, index) => {
-                const date = new Date(prediction.date);
+      <div className="space-y-6 px-4 md:px-6">
+        <section
+          aria-label="Letzte Meldung und Kennzahlen"
+          className="grid grid-cols-1 gap-6 lg:grid-cols-12"
+        >
+          <div className="min-w-0 lg:col-span-7">
+            <AlarmPager lastAlarm={lastAlarm} forecast={stats.prediction} />
+          </div>
 
-                return (
-                  <div
-                    className="bg-muted/30 rounded-md border p-4"
-                    key={prediction.date}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <Badge variant={index === 0 ? "default" : "outline"}>
-                        #{index + 1}
-                      </Badge>
-                      <span className="text-muted-foreground text-sm tabular-nums">
-                        {prediction.confidence}%
-                      </span>
-                    </div>
-                    <p className="mt-4 text-xl font-semibold">
-                      {dayFormatter.format(date)}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      gegen {timeFormatter.format(date)} Uhr
-                    </p>
-                    <p className="text-muted-foreground mt-3 text-xs">
-                      {prediction.reason}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+          <dl className="bg-border grid grid-cols-2 gap-px self-start overflow-hidden rounded-lg border lg:col-span-5 lg:auto-rows-fr lg:grid-cols-1 lg:self-stretch">
+            <KeyFigure
+              label="Einsätze"
+              value={numberFormatter.format(stats.totalCount)}
+              helper={
+                firstAlarmDate
+                  ? `seit ${monthFormatter.format(new Date(firstAlarmDate))}`
+                  : "noch keine erfasst"
+              }
+            />
+            <KeyFigure
+              label="Ø Abstand"
+              value={
+                hasIntervals
+                  ? numberFormatter.format(stats.avgTime)
+                  : placeholder
+              }
+              unit={hasIntervals ? "Tage" : undefined}
+              helper={
+                hasIntervals
+                  ? `Spanne ${numberFormatter.format(stats.minTime)}–${numberFormatter.format(stats.maxTime)} Tage`
+                  : "ab zwei Einsätzen"
+              }
+            />
+            <KeyFigure
+              label="Seit letztem Einsatz"
+              value={
+                stats.currentTime
+                  ? numberFormatter.format(lastAlarmAge)
+                  : placeholder
+              }
+              unit={
+                stats.currentTime
+                  ? lastAlarmAge === 1
+                    ? "Tag"
+                    : "Tage"
+                  : undefined
+              }
+              helper={
+                stats.currentTime
+                  ? dayFormatter.format(new Date(stats.currentTime))
+                  : "noch kein Einsatz"
+              }
+            />
+            <KeyFigure
+              label="Anteil gegangen"
+              value={
+                stats.totalCount > 0
+                  ? numberFormatter.format(attendedRate)
+                  : placeholder
+              }
+              unit={stats.totalCount > 0 ? "%" : undefined}
+              helper={`${numberFormatter.format(stats.goneCount)} von ${numberFormatter.format(stats.totalCount)}`}
+            />
+          </dl>
+        </section>
 
-            <div className="grid grid-cols-1 gap-3 border-t pt-4 md:grid-cols-2">
-              <div className="flex items-start gap-3">
-                <div className="rounded-md bg-red-50 p-2 text-red-700 dark:bg-red-950/40 dark:text-red-300">
-                  <Target className="size-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-muted-foreground text-sm">
-                    Wahrscheinliches Stichwort
-                  </p>
-                  <p className="truncate font-semibold">{predictedKeyword}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="rounded-md bg-red-50 p-2 text-red-700 dark:bg-red-950/40 dark:text-red-300">
-                  <MapPin className="size-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-muted-foreground text-sm">
-                    Wahrscheinlicher Ort
-                  </p>
-                  <p className="truncate font-semibold">{predictedAddress}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Prognose-Signale</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {stats.prediction.signals.map((signal) => (
-              <div className="space-y-2" key={signal.label}>
-                <div className="flex justify-between gap-3 text-sm">
-                  <span className="text-muted-foreground">{signal.label}</span>
-                  <span className="font-medium tabular-nums">
-                    {numberFormatter.format(signal.value)} Tage
-                  </span>
-                </div>
-                <Progress
-                  value={Math.min(
-                    100,
-                    (signal.value / (stats.maxTime || 1)) * 100,
-                  )}
-                  className="h-2"
-                />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Zeit zwischen Einsätzen</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <ChartCard
+            title="Zeit zwischen Einsätzen"
+            description="Abstand in Tagen, chronologisch"
+          >
             <ZeitChart
               stats={stats.times.map((value, index) => ({
                 value,
                 index: index + 1,
               }))}
             />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Einsatz-Tageszeiten</CardTitle>
-          </CardHeader>
-          <CardContent>
+          </ChartCard>
+          <ChartCard
+            title="Einsatz-Tageszeiten"
+            description="Einsätze je Stunde des Tages"
+          >
             <TimeOfDayChart
               stats={Array.from({ length: 24 }, (_, value) => ({
                 timeOfDay: value,
                 value: hoursOfDay.filter((hour) => hour === value).length ?? 0,
               }))}
             />
-          </CardContent>
-        </Card>
-      </section>
+          </ChartCard>
+        </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[0.8fr_1fr_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Anteile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <GonePieChart gone={stats.goneCount} notGone={stats.notGoneCount} />
-          </CardContent>
-        </Card>
-        <RankedTable
-          title="Häufigste Orte"
-          firstColumn="Ort"
-          rows={stats.locations.map((location) => ({
-            label: location.address,
-            count: location.count,
-          }))}
-        />
-        <RankedTable
-          title="Häufigste Stichwörter"
-          firstColumn="Stichwort"
-          rows={stats.keywords.map((keyword) => ({
-            label: keyword.keyword,
-            count: keyword.count,
-          }))}
-        />
-      </section>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Häufigste Positionen</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fahrzeug</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Anzahl</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {stats.positions.map((position) => (
-                <VehicleName
-                  count={position.count}
-                  position={position.seat}
-                  vehicleId={position.vehicle}
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <RankedCard
+            title="Häufigste Orte"
+            isEmpty={stats.locations.length === 0}
+          >
+            {stats.locations.slice(0, 6).map((location) => (
+              <RankedRow
+                key={location.address}
+                label={location.address}
+                count={location.count}
+                max={locationMax}
+              />
+            ))}
+          </RankedCard>
+          <RankedCard
+            title="Häufigste Stichwörter"
+            isEmpty={stats.keywords.length === 0}
+          >
+            {stats.keywords.slice(0, 6).map((keyword) => (
+              <RankedRow
+                key={keyword.keyword}
+                label={
+                  <span className="font-display text-base tracking-wide">
+                    {keyword.keyword}
+                  </span>
+                }
+                count={keyword.count}
+                max={keywordMax}
+              />
+            ))}
+          </RankedCard>
+          <div className="flex min-w-0 flex-col gap-6 md:col-span-2 md:grid md:grid-cols-2 xl:col-span-1 xl:flex">
+            <Card className="gap-4">
+              <CardHeader>
+                <CardTitle>Anteile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GoneSplit
+                  gone={stats.goneCount}
+                  notGone={stats.notGoneCount}
+                />
+              </CardContent>
+            </Card>
+            <RankedCard
+              title="Häufigste Positionen"
+              isEmpty={stats.positions.length === 0}
+            >
+              {stats.positions.slice(0, 6).map((position) => (
+                <RankedRow
                   key={`${position.vehicle}-${position.seat}`}
+                  label={
+                    <VehicleName
+                      vehicleId={position.vehicle}
+                      position={position.seat}
+                    />
+                  }
+                  count={position.count}
+                  max={positionMax}
                 />
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+            </RankedCard>
+          </div>
+        </section>
+      </div>
+    </>
   );
 }
