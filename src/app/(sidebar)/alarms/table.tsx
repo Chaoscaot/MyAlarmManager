@@ -377,6 +377,82 @@ function LogbookEntry({ row }: Readonly<{ row: AlarmRow }>) {
   );
 }
 
+const sortOptions = [
+  { value: "default", label: "Standard", sorting: [] },
+  {
+    value: "date-desc",
+    label: "Neueste zuerst",
+    sorting: [{ id: "date", desc: true }],
+  },
+  {
+    value: "date-asc",
+    label: "Älteste zuerst",
+    sorting: [{ id: "date", desc: false }],
+  },
+  {
+    value: "keyword",
+    label: "Stichwort A–Z",
+    sorting: [{ id: "keyword", desc: false }],
+  },
+  {
+    value: "address",
+    label: "Einsatzort A–Z",
+    sorting: [{ id: "address", desc: false }],
+  },
+  {
+    value: "vehicle",
+    label: "Fahrzeug A–Z",
+    sorting: [{ id: "vehicleName", desc: false }],
+  },
+] satisfies { value: string; label: string; sorting: SortingState }[];
+
+/** The stacked list has no column headers, so sorting gets its own control. */
+function ListSort({
+  sorting,
+  onChange,
+}: {
+  sorting: SortingState;
+  onChange: (sorting: SortingState) => void;
+}) {
+  const current =
+    sortOptions.find(
+      (option) =>
+        option.sorting.length === sorting.length &&
+        option.sorting.every(
+          (sort, index) =>
+            sort.id === sorting[index]?.id &&
+            sort.desc === sorting[index]?.desc,
+        ),
+    )?.value ?? "default";
+
+  return (
+    <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+      <Label htmlFor="alarm-list-sort" className={fieldLabelClass}>
+        Sortierung
+      </Label>
+      <Select
+        value={current}
+        onValueChange={(value) =>
+          onChange(
+            sortOptions.find((option) => option.value === value)?.sorting ?? [],
+          )
+        }
+      >
+        <SelectTrigger id="alarm-list-sort" size="sm" className="w-44">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {sortOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export function DataTable(props: {
   preloadedAlarms: Preloaded<typeof api.alarms.all>;
 }) {
@@ -483,6 +559,7 @@ export function DataTable(props: {
         </div>
 
         <div className="lg:hidden">
+          <ListSort sorting={sorting} onChange={setSorting} />
           {isEmpty ? (
             emptyState
           ) : (

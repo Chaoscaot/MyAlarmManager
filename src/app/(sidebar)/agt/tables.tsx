@@ -24,6 +24,23 @@ const descriptionMap: Record<CheckType, string> = {
 /** From this many months before the due date a check is shown as "bald fällig". */
 const WARN_MONTHS = 3;
 
+/**
+ * Today's date in German time. Server and browser can sit in different time
+ * zones; deriving the calendar day from one zone keeps their renders identical.
+ */
+function germanToday() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value);
+
+  return new Date(part("year"), part("month") - 1, part("day"));
+}
+
 function formatMonth(date: Date) {
   return `${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
 }
@@ -193,7 +210,7 @@ export default function AgtPage(props: {
 }) {
   const latestChecks = usePreloadedQuery(props.preloadedLatestChecks);
 
-  const date = new Date();
+  const date = germanToday();
   const isAble =
     latestChecks.length == 4 &&
     latestChecks.every((check) => {
