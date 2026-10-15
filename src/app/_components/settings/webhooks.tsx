@@ -94,7 +94,10 @@ export default function WebhookManager() {
       {hooks.length > 0 ? (
         <ul className="divide-y rounded-md border">
           {hooks.map((hook) => (
-            <li key={hook._id} className="grid gap-2 py-3 pr-2 pl-4">
+            <li
+              key={hook._id}
+              className="grid grid-cols-[minmax(0,1fr)] gap-2 py-3 pr-2 pl-4"
+            >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{hook.name}</p>

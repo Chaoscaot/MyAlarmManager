@@ -143,7 +143,7 @@ function RequirementCard({
             "h-full rounded-full",
             state === "valid" ? "bg-tauglich" : "bg-feuerrot/60",
           )}
-          style={{ width: `${remaining * 100}%` }}
+          style={{ width: `${Math.round(remaining * 100)}%` }}
         />
       </div>
       <div className="mt-auto flex items-center justify-between gap-3">
