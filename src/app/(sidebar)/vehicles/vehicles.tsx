@@ -2,7 +2,10 @@
 
 import React from "react";
 import { Trash2 } from "lucide-react";
-import AddVehicleDialog from "~/app/(sidebar)/vehicles/add-vehicle";
+import {
+  AddVehicleDialog,
+  EditVehicleDialog,
+} from "~/app/(sidebar)/vehicles/vehicle-dialogs";
 import PageHeader from "~/app/_components/page-header";
 import { Button, buttonVariants } from "~/components/ui/button";
 import {
@@ -88,36 +91,39 @@ function VehiclePlate({
             </>
           ) : null}
         </p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground"
-              aria-label={`${vehicle.name} löschen`}
-            >
-              <Trash2 />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Fahrzeug löschen</AlertDialogTitle>
-              <AlertDialogDescription>
-                Möchten Sie {vehicle.name} ({vehicle.callSign}) wirklich
-                löschen? Diese Aktion kann nicht rückgängig gemacht werden.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-              <AlertDialogAction
-                className={buttonVariants({ variant: "destructive" })}
-                onClick={onDelete}
+        <div className="flex shrink-0 items-center">
+          <EditVehicleDialog vehicle={vehicle} wehrName={wehrName} />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                aria-label={`${vehicle.name} löschen`}
               >
-                Löschen
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Trash2 />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Fahrzeug löschen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Möchten Sie {vehicle.name} ({vehicle.callSign}) wirklich
+                  löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction
+                  className={buttonVariants({ variant: "destructive" })}
+                  onClick={onDelete}
+                >
+                  Löschen
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </article>
   );
