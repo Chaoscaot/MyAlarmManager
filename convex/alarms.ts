@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { refreshForecast } from "./forecast";
 
 export const all = query({
   args: {},
@@ -53,7 +54,11 @@ export const create = internalMutation({
       ),
     ),
   },
-  handler: async (ctx, args) => await ctx.db.insert("alarms", args),
+  handler: async (ctx, args) => {
+    const id = await ctx.db.insert("alarms", args);
+    await refreshForecast(ctx, args.userId);
+    return id;
+  },
 });
 
 export const add = mutation({
@@ -88,7 +93,7 @@ export const add = mutation({
         },
       ],
     };
-    ctx.runMutation(internal.alarms.create, alarm);
+    await ctx.runMutation(internal.alarms.create, alarm);
   },
 });
 
@@ -159,7 +164,7 @@ export const update = mutation({
     if (changes.length === 0) {
       return ctx.db.patch(args.id, up);
     }
-    return ctx.db.patch(args.id, {
+    await ctx.db.patch(args.id, {
       ...up,
       editHistory: [
         ...(alarm.editHistory ?? []),
@@ -169,6 +174,14 @@ export const update = mutation({
         },
       ],
     });
+    // Only these fields feed the forecast.
+    if (
+      alarm.date !== up.date ||
+      alarm.keyword !== up.keyword ||
+      alarm.address !== up.address
+    ) {
+      await refreshForecast(ctx, userId);
+    }
   },
 });
 
@@ -185,6 +198,7 @@ export const remove = mutation({
     if (!alarm || alarm.userId !== userId) {
       throw new Error("Alarm not found or not authorized");
     }
-    return ctx.db.delete(args.id);
+    await ctx.db.delete(args.id);
+    await refreshForecast(ctx, userId);
   },
 });

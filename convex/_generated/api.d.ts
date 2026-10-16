@@ -11,6 +11,9 @@
 import type * as agt from "../agt.js";
 import type * as alarms from "../alarms.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
+import type * as forecast from "../forecast.js";
+import type * as forecastModel from "../forecastModel.js";
 import type * as http from "../http.js";
 import type * as stats from "../stats.js";
 import type * as user from "../user.js";
@@ -27,6 +30,9 @@ declare const fullApi: ApiFromModules<{
   agt: typeof agt;
   alarms: typeof alarms;
   auth: typeof auth;
+  crons: typeof crons;
+  forecast: typeof forecast;
+  forecastModel: typeof forecastModel;
   http: typeof http;
   stats: typeof stats;
   user: typeof user;

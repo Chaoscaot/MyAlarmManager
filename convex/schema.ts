@@ -2,6 +2,32 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
+const rankedValue = v.union(
+  v.object({ value: v.string(), share: v.number() }),
+  v.null(),
+);
+
+const forecastModel = v.object({
+  fittedAt: v.number(),
+  firstAlarmAt: v.number(),
+  alarmCount: v.number(),
+  weightedAlarms: v.number(),
+  hourOfDay: v.array(v.number()),
+  dayOfWeek: v.array(v.number()),
+  keyword: rankedValue,
+  address: rankedValue,
+});
+
+const forecast = v.object({
+  computedAt: v.number(),
+  alarmsPerDay: v.number(),
+  likely: v.number(),
+  quartiles: v.object({ q25: v.number(), q50: v.number(), q75: v.number() }),
+  within24h: v.number(),
+  within7d: v.number(),
+  ready: v.boolean(),
+});
+
 export default defineSchema({
   ...authTables,
   users: defineTable({
@@ -64,4 +90,11 @@ export default defineSchema({
     month: v.number(),
     validity: v.number(),
   }),
+  // Derived from alarms, see convex/forecast.ts. One row per user.
+  forecasts: defineTable({
+    userId: v.id("users"),
+    version: v.number(),
+    model: v.union(forecastModel, v.null()),
+    forecast: v.union(forecast, v.null()),
+  }).index("by_user", ["userId"]),
 });
