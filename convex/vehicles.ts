@@ -58,6 +58,35 @@ export const add = mutation({
   },
 });
 
+export const update = mutation({
+  args: {
+    id: v.id("vehicles"),
+    name: v.string(),
+    callSign: v.string(),
+    crew: v.union(
+      v.literal("GRUPPE"),
+      v.literal("STAFFEL"),
+      v.literal("TRUPP"),
+      v.literal("MTW"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    const vehicle = await ctx.db.get(args.id);
+    if (!vehicle || vehicle.userId !== userId) {
+      throw new Error("Vehicle not found or access denied");
+    }
+    return ctx.db.patch(args.id, {
+      name: args.name,
+      callSign: args.callSign,
+      crew: args.crew,
+    });
+  },
+});
+
 export const remove = mutation({
   args: { id: v.id("vehicles") },
   handler: async (ctx, args) => {

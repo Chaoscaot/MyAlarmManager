@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Pencil } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -34,6 +35,7 @@ import {
 } from "~/components/ui/select";
 import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
+import type { Doc } from "#/_generated/dataModel";
 import { seatInVehicleType } from "~/lib/seats";
 
 const formSchema = z.object({
@@ -48,8 +50,10 @@ const formSchema = z.object({
   crew: z.enum(["GRUPPE", "STAFFEL", "TRUPP", "MTW"]),
 });
 
+type VehicleValues = z.infer<typeof formSchema>;
+
 const crewOptions: {
-  value: z.infer<typeof formSchema>["crew"];
+  value: VehicleValues["crew"];
   label: string;
 }[] = [
   { value: "GRUPPE", label: "Gruppe" },
@@ -58,30 +62,28 @@ const crewOptions: {
   { value: "MTW", label: "Mannschaftstransportwagen" },
 ];
 
-function AddVehicleForm({
+function VehicleForm({
   wehrName,
-  onClose,
+  defaultValues,
+  savedCrew,
+  submitLabel,
+  onSubmit,
 }: Readonly<{
   wehrName?: string;
-  onClose: () => void;
+  defaultValues: Partial<VehicleValues>;
+  /** Crew already stored for the vehicle; changing it re-labels past positions. */
+  savedCrew?: VehicleValues["crew"];
+  submitLabel: string;
+  onSubmit: (values: VehicleValues) => Promise<unknown>;
 }>) {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<VehicleValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: undefined,
-      callSign: undefined,
-      crew: "GRUPPE",
-    },
+    defaultValues,
   });
 
-  const createVehicleMutation = useMutation(api.vehicles.add);
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    onClose();
-    await createVehicleMutation(values);
-  }
-
   const callSign = form.watch("callSign");
+  const crewChanged =
+    savedCrew !== undefined && form.watch("crew") !== savedCrew;
 
   return (
     <Form {...form}>
@@ -149,8 +151,9 @@ function AddVehicleForm({
                 </Select>
               </FormControl>
               <FormDescription>
-                Bestimmt die Sitzpositionen, die Sie bei Einsätzen wählen
-                können.
+                {crewChanged
+                  ? "Bisherige Einsätze behalten ihre Platznummer und zeigen den Positionsnamen der neuen Besatzung."
+                  : "Bestimmt die Sitzpositionen, die Sie bei Einsätzen wählen können."}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -163,17 +166,18 @@ function AddVehicleForm({
               Abbrechen
             </Button>
           </DialogClose>
-          <Button type="submit">Anlegen</Button>
+          <Button type="submit">{submitLabel}</Button>
         </DialogFooter>
       </form>
     </Form>
   );
 }
 
-export default function AddVehicleDialog({
+export function AddVehicleDialog({
   wehrName,
 }: Readonly<{ wehrName?: string }>) {
   const [open, setOpen] = useState(false);
+  const createVehicle = useMutation(api.vehicles.add);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -187,7 +191,65 @@ export default function AddVehicleDialog({
             Das Fahrzeug steht danach bei jedem Einsatz zur Auswahl.
           </DialogDescription>
         </DialogHeader>
-        <AddVehicleForm wehrName={wehrName} onClose={() => setOpen(false)} />
+        <VehicleForm
+          wehrName={wehrName}
+          defaultValues={{
+            name: undefined,
+            callSign: undefined,
+            crew: "GRUPPE",
+          }}
+          submitLabel="Anlegen"
+          onSubmit={async (values) => {
+            setOpen(false);
+            await createVehicle(values);
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function EditVehicleDialog({
+  vehicle,
+  wehrName,
+}: Readonly<{ vehicle: Doc<"vehicles">; wehrName?: string }>) {
+  const [open, setOpen] = useState(false);
+  const updateVehicle = useMutation(api.vehicles.update);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground"
+          aria-label={`${vehicle.name} bearbeiten`}
+        >
+          <Pencil />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Fahrzeug bearbeiten</DialogTitle>
+          <DialogDescription>
+            Änderungen erscheinen auch in bisherigen Einsätzen mit diesem
+            Fahrzeug.
+          </DialogDescription>
+        </DialogHeader>
+        <VehicleForm
+          wehrName={wehrName}
+          defaultValues={{
+            name: vehicle.name,
+            callSign: vehicle.callSign,
+            crew: vehicle.crew,
+          }}
+          savedCrew={vehicle.crew}
+          submitLabel="Speichern"
+          onSubmit={async (values) => {
+            setOpen(false);
+            await updateVehicle({ id: vehicle._id, ...values });
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
