@@ -3,13 +3,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-} from "~/components/ui/breadcrumb";
+import Link from "next/link";
+import BrandMark from "~/app/_components/brand-mark";
 import AppSidebar from "~/app/_components/app-sidebar";
 import { redirect } from "next/navigation";
 import {
@@ -39,22 +34,20 @@ export default async function RootLayout({
     <SidebarProvider>
       <AppSidebar session={session} />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">
-                    MyAlarm-Manager
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
+        <header className="flex h-14 shrink-0 items-center gap-3 px-4 md:px-6">
+          <SidebarTrigger className="-ml-1" />
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 md:hidden"
+            aria-label="MyAlarm, zu den Statistiken"
+          >
+            <BrandMark className="size-5" />
+            <span className="font-display text-lg font-bold tracking-wide uppercase">
+              MyAlarm
+            </span>
+          </Link>
         </header>
-        {children}
+        <div className="pb-10">{children}</div>
         {modal}
       </SidebarInset>
     </SidebarProvider>

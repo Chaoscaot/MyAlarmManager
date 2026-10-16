@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -15,6 +16,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,10 +33,10 @@ import { useMutation } from "convex/react";
 import { api } from "#/_generated/api";
 
 const nameMap: Record<CheckType[number], string> = {
-  G26: " G26",
-  STRECKE: "n Streckendurchgang",
-  UNTERWEISUNG: " Unterweisung",
-  UEBUNG: " Übung",
+  G26: "G26",
+  STRECKE: "Strecke",
+  UNTERWEISUNG: "Unterweisung",
+  UEBUNG: "Übung",
 };
 
 export default function CreateDialog({
@@ -51,8 +53,12 @@ export default function CreateDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Neue{type ? nameMap[type] : " Vorraussetzung"} anlegen
+            {type ? `${nameMap[type]} eintragen` : "Nachweis eintragen"}
           </DialogTitle>
+          <DialogDescription>
+            Tragen Sie Monat und Jahr des letzten Nachweises ein. Die Frist
+            ergibt sich aus der Gültigkeit.
+          </DialogDescription>
         </DialogHeader>
         <CreateDialogForm type={type} onClose={() => setOpen(false)} />
       </DialogContent>
@@ -96,13 +102,13 @@ function CreateDialogForm({
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex gap-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-5">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem>
                   <FormLabel>Typ</FormLabel>
                   <Select
                     onValueChange={(e) => {
@@ -115,13 +121,13 @@ function CreateDialogForm({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Typ Auswählen..." />
+                        <SelectValue placeholder="Typ wählen" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Object.keys(nameMap).map((value) => (
                         <SelectItem key={value} value={value}>
-                          {nameMap[value]?.substring(1)}
+                          {nameMap[value]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -134,7 +140,7 @@ function CreateDialogForm({
               name="validity"
               rules={{ deps: ["validity"] }}
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem>
                   <FormLabel>Gültigkeit</FormLabel>
                   <FormControl>
                     <Select
@@ -146,28 +152,33 @@ function CreateDialogForm({
                           className="w-full"
                           disabled={form.watch(["type"])[0] != "G26"}
                         >
-                          <SelectValue placeholder="Gültigkeit auswählen..." />
+                          <SelectValue placeholder="Gültigkeit wählen" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {Array.from({ length: 3 }, (_, i) => (
                           <SelectItem key={i} value={(i + 1).toString()}>
-                            {i + 1} Jahr(e)
+                            {i + 1} {i === 0 ? "Jahr" : "Jahre"}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
+                  {form.watch("type") != "G26" ? (
+                    <FormDescription className="text-xs">
+                      Nur beim G26 wählbar.
+                    </FormDescription>
+                  ) : null}
                 </FormItem>
               )}
             />
           </div>
-          <div className="flex gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="month"
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem>
                   <FormLabel>Monat</FormLabel>
                   <Select
                     onValueChange={(e) => field.onChange(Number(e))}
@@ -175,13 +186,13 @@ function CreateDialogForm({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Monat auswählen..." />
+                        <SelectValue placeholder="Monat wählen" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Array.from({ length: 12 }, (_, i) => (
                         <SelectItem key={i} value={(i + 1).toString()}>
-                          {new Date(0, i).toLocaleString("default", {
+                          {new Date(0, i).toLocaleString("de-DE", {
                             month: "long",
                           })}
                         </SelectItem>
@@ -195,15 +206,15 @@ function CreateDialogForm({
               control={form.control}
               name="year"
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem>
                   <FormLabel>Jahr</FormLabel>
                   <Select
                     onValueChange={(e) => field.onChange(Number(e))}
                     defaultValue={field.value.toString()}
                   >
                     <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Jahr auswählen..." />
+                      <SelectTrigger className="w-full tabular-nums">
+                        <SelectValue placeholder="Jahr wählen" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -221,13 +232,13 @@ function CreateDialogForm({
               )}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="pt-2">
             <DialogClose asChild>
               <Button variant="outline" type="button">
                 Abbrechen
               </Button>
             </DialogClose>
-            <Button type="submit">Erstellen</Button>
+            <Button type="submit">Speichern</Button>
           </DialogFooter>
         </form>
       </Form>

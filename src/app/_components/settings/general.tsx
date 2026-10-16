@@ -15,11 +15,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "~/components/ui/input";
 import React from "react";
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
+import { Switch } from "~/components/ui/switch";
 import type { Doc } from "#/_generated/dataModel";
 import { api } from "#/_generated/api";
 import { useMutation } from "convex/react";
-import type { CheckedState } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   wehrName: z.string(),
@@ -33,57 +32,69 @@ export default function GeneralSettingsPane({
     resolver: zodResolver(formSchema),
     defaultValues: {
       wehrName: user.wehrName ?? "",
-      showEmail: user.showEmail,
+      showEmail: user.showEmail ?? false,
     },
   });
 
   const updateSettings = useMutation(api.user.saveSettings);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     await updateSettings(values);
   }
 
+  const wehrName = form.watch("wehrName");
+  const { isSubmitting } = form.formState;
+
   return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Funkrufname</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Musterstadt..." />
-                </FormControl>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+        <FormField
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ortsname im Funkrufnamen</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Musterstadt" />
+              </FormControl>
+              <FormDescription>
+                Steht vor der Kennung jedes Fahrzeugs:{" "}
+                <span className="text-foreground font-display tracking-wide uppercase">
+                  Florian {wehrName || "Musterstadt"} 1/46-1
+                </span>
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+          name={"wehrName"}
+        />
+        <FormField
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start justify-between gap-6">
+              <div className="grid gap-1.5">
+                <FormLabel>E-Mail-Adresse anzeigen</FormLabel>
                 <FormDescription>
-                  Der Funkrufname des Ortes, Florian Musterstadt
+                  Zeigt Ihre E-Mail-Adresse unten in der Seitenleiste.
                 </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-            name={"wehrName"}
-          />
-          <FormField
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-Mail Anzeigen</FormLabel>
-                <FormControl>
-                  {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                  <Checkbox
-                    checked={field.value as CheckedState}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-            name={"showEmail"}
-          />
-        </form>
-      </Form>
-      <Button className="mt-4" onClick={form.handleSubmit(onSubmit)}>
-        Speichern
-      </Button>
-    </>
+              </div>
+              <FormControl>
+                <Switch
+                  className="mt-0.5"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+          name={"showEmail"}
+        />
+        <div>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Wird gespeichert…" : "Speichern"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

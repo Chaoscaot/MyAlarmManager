@@ -13,15 +13,8 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { Copy, Menu, Trash } from "lucide-react";
+import { Label } from "~/components/ui/label";
+import { Copy, MoreHorizontal, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +24,14 @@ import {
 import { toast } from "sonner";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "#/_generated/api";
+
+function webhookUrl(token: string) {
+  return (
+    process.env.NEXT_PUBLIC_CONVEX_URL?.replace(".cloud", ".site") +
+    "/webhook/" +
+    token
+  );
+}
 
 function CreateWebhookComponent() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,20 +47,31 @@ function CreateWebhookComponent() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Webhook Erstellen</Button>
+        <Button variant="outline">Webhook anlegen</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Webhook Erstellen</DialogTitle>
-          <DialogDescription>Gebe der Webhook einen Namen</DialogDescription>
+          <DialogTitle>Webhook anlegen</DialogTitle>
+          <DialogDescription>
+            Der Name hilft Ihnen, die Adresse später wiederzuerkennen, z. B. der
+            Name des Alamos-Geräts.
+          </DialogDescription>
         </DialogHeader>
-        <Input id="webhook-name" placeholder="Name" ref={inputRef} />
-        <DialogFooter>
+        <div className="grid gap-2">
+          <Label htmlFor="webhook-name">Name</Label>
+          <Input
+            id="webhook-name"
+            placeholder="Alamos Wache"
+            autoComplete="off"
+            ref={inputRef}
+          />
+        </div>
+        <DialogFooter className="pt-2">
           <DialogClose asChild>
-            <Button variant="ghost">Abbrechen</Button>
+            <Button variant="outline">Abbrechen</Button>
           </DialogClose>
           <DialogClose asChild onClick={create}>
-            <Button>Erstellen</Button>
+            <Button>Anlegen</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
@@ -72,64 +84,78 @@ export default function WebhookManager() {
 
   const deleteHook = useMutation(api.webhooks.remove);
 
+  async function copy(token: string) {
+    await navigator.clipboard.writeText(webhookUrl(token));
+    toast("Adresse kopiert");
+  }
+
   return (
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Erstellt</TableHead>
-            <TableHead>Aktion</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+    <div className="grid gap-4">
+      {hooks.length > 0 ? (
+        <ul className="divide-y rounded-md border">
           {hooks.map((hook) => (
-            <TableRow key={hook._id}>
-              <TableCell>{hook.name}</TableCell>
-              <TableCell>
-                {new Intl.DateTimeFormat("de", {
-                  timeStyle: "short",
-                  dateStyle: "medium",
-                }).format(new Date(hook._creationTime))}
-              </TableCell>
-              <TableCell>
+            <li
+              key={hook._id}
+              className="grid grid-cols-[minmax(0,1fr)] gap-2 py-3 pr-2 pl-4"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{hook.name}</p>
+                  <p className="text-muted-foreground text-xs tabular-nums">
+                    Angelegt am{" "}
+                    {new Intl.DateTimeFormat("de", {
+                      timeStyle: "short",
+                      dateStyle: "medium",
+                    }).format(new Date(hook._creationTime))}
+                  </p>
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="ghost">
-                      <Menu />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={`Aktionen für ${hook.name}`}
+                    >
+                      <MoreHorizontal />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(
-                          process.env.NEXT_PUBLIC_CONVEX_URL?.replace(
-                            ".cloud",
-                            ".site",
-                          ) +
-                            "/webhook/" +
-                            hook.token,
-                        );
-                        toast("Link Kopiert!");
-                      }}
-                    >
-                      <Copy />
-                      Link Kopieren
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
+                      variant="destructive"
                       onClick={async () => deleteHook({ id: hook._id })}
                     >
-                      <Trash />
+                      <Trash2 />
                       Löschen
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </TableCell>
-            </TableRow>
+              </div>
+              <div className="bg-background flex items-center gap-1 rounded-sm border py-0.5 pr-0.5 pl-3">
+                <code className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs tabular-nums">
+                  {webhookUrl(hook.token)}
+                </code>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-8"
+                  aria-label={`Adresse von ${hook.name} kopieren`}
+                  onClick={() => copy(hook.token)}
+                >
+                  <Copy />
+                </Button>
+              </div>
+            </li>
           ))}
-        </TableBody>
-      </Table>
-      <CreateWebhookComponent />
+        </ul>
+      ) : (
+        <p className="text-muted-foreground rounded-md border border-dashed px-4 py-5 text-sm">
+          Noch kein Webhook angelegt.
+        </p>
+      )}
+      <div>
+        <CreateWebhookComponent />
+      </div>
     </div>
   );
 }

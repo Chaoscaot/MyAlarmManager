@@ -15,7 +15,6 @@ export default function EditAlarmDialog({
   const updateAlarm = useMutation(api.alarms.update);
 
   async function handleSubmit(date: AlarmEditorSchema | undefined) {
-    console.log(date);
     onClose();
     if (date) {
       await updateAlarm({
@@ -42,7 +41,7 @@ export default function EditAlarmDialog({
         address: alarm.address,
         notes: alarm.notes ?? null,
       }}
-      submitText="Bearbeiten"
+      submitText="Einsatz speichern"
     />
   );
 }

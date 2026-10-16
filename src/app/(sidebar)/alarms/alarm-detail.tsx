@@ -2,27 +2,29 @@
 
 import type { Doc } from "#/_generated/dataModel";
 import type React from "react";
-import { Badge } from "~/components/ui/badge";
-import { Separator } from "~/components/ui/separator";
-import { seatInVehicleType } from "~/lib/seats";
+import { Pencil } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import {
+  fieldLabelClass,
+  formatDay,
+  formatTime,
+  GoneMark,
+  Placeholder,
+  seatName,
+  UnfinishedMark,
+} from "./logbook";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("de", {
-    dateStyle: "full",
-    timeStyle: "medium",
-  }).format(new Date(value));
-}
+const sectionClass =
+  "font-display text-base leading-none font-semibold tracking-wide uppercase";
 
 function DetailItem({
   label,
-  value,
-}: Readonly<{ label: string; value: React.ReactNode }>) {
+  children,
+}: Readonly<{ label: string; children: React.ReactNode }>) {
   return (
-    <div className="space-y-1">
-      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-        {label}
-      </dt>
-      <dd className="text-sm">{value ?? "Nicht angegeben"}</dd>
+    <div className="space-y-1.5">
+      <dt className={fieldLabelClass}>{label}</dt>
+      <dd className="text-sm">{children}</dd>
     </div>
   );
 }
@@ -30,69 +32,105 @@ function DetailItem({
 export default function AlarmDetail({
   alarm,
   vehicle,
+  onEdit,
 }: Readonly<{
   alarm: Doc<"alarms">;
   vehicle: Doc<"vehicles"> | null;
+  onEdit?: () => void;
 }>) {
-  const seat =
-    vehicle && alarm.seat !== null
-      ? seatInVehicleType[vehicle.crew][alarm.seat]
-      : null;
+  const seat = seatName(alarm, vehicle);
   const history = alarm.editHistory?.slice().reverse() ?? [];
   const notes = alarm.notes?.trim();
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="text-muted-foreground text-sm">
-            {formatDate(alarm.date)}
+    <div className="space-y-6">
+      {alarm.uneditedFromWebhook && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3">
+          <div className="space-y-1">
+            <UnfinishedMark className="text-foreground text-sm" />
+            <p className="text-muted-foreground text-sm">
+              Vom Melder angelegt. Ergänzen Sie Fahrzeug, Position und
+              Teilnahme.
+            </p>
           </div>
-          <div className="text-2xl font-semibold">{alarm.keyword}</div>
+          {onEdit && (
+            <Button type="button" size="sm" onClick={onEdit}>
+              Jetzt ergänzen
+            </Button>
+          )}
         </div>
-        <Badge variant={alarm.gone ? "default" : "secondary"}>
-          {alarm.gone ? "Gegangen" : "Nicht gegangen"}
-        </Badge>
-      </div>
+      )}
 
-      <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <DetailItem label="Adresse" value={alarm.address} />
-        <DetailItem label="Fahrzeug" value={vehicle?.name} />
-        <DetailItem label="Position" value={seat} />
-        <DetailItem label="Datum" value={formatDate(alarm.date)} />
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-4 border-y py-4 sm:grid-cols-2">
+        <DetailItem label="Einsatzort">
+          {alarm.address || <Placeholder>Keine Adresse</Placeholder>}
+        </DetailItem>
+        <DetailItem label="Teilnahme">
+          <GoneMark gone={alarm.gone} />
+        </DetailItem>
+        <DetailItem label="Fahrzeug">
+          {vehicle ? (
+            <span className="font-display text-base font-semibold tracking-wide uppercase">
+              {vehicle.name}
+            </span>
+          ) : (
+            <Placeholder>Kein Fahrzeug</Placeholder>
+          )}
+        </DetailItem>
+        <DetailItem label="Position">
+          {seat ?? <Placeholder>Keine Position</Placeholder>}
+        </DetailItem>
       </dl>
 
-      <Separator />
-
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Notizen</h3>
-        <p className="bg-muted/40 min-h-20 rounded-md border p-3 text-sm whitespace-pre-wrap">
-          {notes && notes.length > 0 ? notes : "Keine Notizen hinterlegt."}
-        </p>
-      </section>
-
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold">Bearbeitungshistorie</h3>
-        {history.length > 0 ? (
-          <div className="space-y-3">
-            {history.map((entry) => (
-              <div
-                key={`${entry.at}-${entry.changes.join("-")}`}
-                className="border-l-2 pl-3"
-              >
-                <div className="text-muted-foreground text-xs">
-                  {formatDate(entry.at)}
-                </div>
-                <div className="text-sm">{entry.changes.join(", ")}</div>
-              </div>
-            ))}
-          </div>
+        <h3 className={sectionClass}>Notizen</h3>
+        {notes && notes.length > 0 ? (
+          <p className="text-sm leading-relaxed whitespace-pre-wrap">{notes}</p>
         ) : (
           <p className="text-muted-foreground text-sm">
-            Noch keine Bearbeitungshistorie vorhanden.
+            Keine Notizen hinterlegt.
           </p>
         )}
       </section>
+
+      <section className="space-y-3">
+        <h3 className={sectionClass}>Bearbeitungshistorie</h3>
+        {history.length > 0 ? (
+          <ol className="ml-1 space-y-4 border-l">
+            {history.map((entry) => (
+              <li
+                key={`${entry.at}-${entry.changes.join("-")}`}
+                className="relative pl-4"
+              >
+                <span
+                  aria-hidden
+                  className="bg-muted-foreground absolute top-1.5 -left-[3.5px] size-1.5 rounded-full"
+                />
+                <time
+                  dateTime={entry.at}
+                  className="text-muted-foreground block text-xs tabular-nums"
+                >
+                  {formatDay(entry.at)} · {formatTime(entry.at)}
+                </time>
+                <p className="text-sm">{entry.changes.join(", ")}</p>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Seit dem Anlegen nicht bearbeitet.
+          </p>
+        )}
+      </section>
+
+      {onEdit && !alarm.uneditedFromWebhook && (
+        <div className="flex justify-end border-t pt-4">
+          <Button type="button" variant="outline" onClick={onEdit}>
+            <Pencil aria-hidden />
+            Einsatz bearbeiten
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
