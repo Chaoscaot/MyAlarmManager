@@ -28,7 +28,7 @@ RUN SKIP_ENV_VALIDATION=1 bun run build
 
 ##### RUNNER
 
-FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs24-debian12 AS runner
 WORKDIR /app
 
 ENV NODE_ENV production

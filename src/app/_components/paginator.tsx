@@ -1,4 +1,4 @@
-import { type Table } from "@tanstack/react-table";
+import { type RowData, type Table } from "@tanstack/react-table";
 import {
   Select,
   SelectContent,
@@ -13,15 +13,16 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { type alarmTableFeatures } from "~/app/(sidebar)/alarms/columns";
 
-interface DataTablePaginationProps<TData> {
-  table: Table<TData>;
+interface DataTablePaginationProps<TData extends RowData> {
+  table: Table<typeof alarmTableFeatures, TData>;
 }
 
-export function DataTablePagination<TData>({
+export function DataTablePagination<TData extends RowData>({
   table,
 }: DataTablePaginationProps<TData>) {
-  const { pageIndex, pageSize } = table.getState().pagination;
+  const { pageIndex, pageSize } = table.store.state.pagination;
   const total = table.getFilteredRowModel().rows.length;
   const first = total === 0 ? 0 : pageIndex * pageSize + 1;
   const last = Math.min(total, (pageIndex + 1) * pageSize);
