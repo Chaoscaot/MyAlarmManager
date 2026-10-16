@@ -3,13 +3,9 @@
 import {
   type ColumnFiltersState,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   type SortingState,
   type Table as TanStackTable,
-  useReactTable,
+  useTable,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -19,7 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { columns, WebhookHint, type AlarmRow } from "./columns";
+import {
+  alarmTableFeatures,
+  columns,
+  WebhookHint,
+  type AlarmRow,
+} from "./columns";
 import {
   fieldLabelClass,
   formatDay,
@@ -58,7 +59,7 @@ function FilterToolbar({
   table,
   alarms,
 }: Readonly<{
-  table: TanStackTable<AlarmRow>;
+  table: TanStackTable<typeof alarmTableFeatures, AlarmRow>;
   alarms: AlarmRow[];
 }>) {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -120,7 +121,7 @@ function FilterToolbar({
     return `${year}-${month}-${day}`;
   }
 
-  const activeFilters = table.getState().columnFilters.length;
+  const activeFilters = table.store.state.columnFilters.length;
 
   return (
     <div className="bg-card rounded-md border">
@@ -460,7 +461,8 @@ export function DataTable(props: {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  const table = useReactTable({
+  const table = useTable({
+    features: alarmTableFeatures,
     data: alarms ?? [],
     columns,
     state: {
@@ -469,10 +471,6 @@ export function DataTable(props: {
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
   const rows = table.getRowModel().rows;
@@ -534,10 +532,9 @@ export function DataTable(props: {
                 rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
                     className="border-border/70 hover:bg-accent/40"
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getAllCells().map((cell) => (
                       <TableCell
                         key={cell.id}
                         className={cn(

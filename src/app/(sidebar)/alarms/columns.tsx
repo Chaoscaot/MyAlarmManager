@@ -3,7 +3,17 @@
 import {
   type Column,
   type ColumnDef,
-  type RowData,
+  columnFilteringFeature,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  metaHelper,
+  rowPaginationFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_datetime,
+  sortFn_text,
+  tableFeatures,
 } from "@tanstack/react-table";
 import RowActions from "./row-actions";
 import type { Doc } from "#/_generated/dataModel";
@@ -22,13 +32,25 @@ import {
   seatName,
 } from "./logbook";
 
-declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
+export const alarmTableFeatures = tableFeatures({
+  columnFilteringFeature,
+  rowSortingFeature,
+  rowPaginationFeature,
+  filteredRowModel: createFilteredRowModel(),
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    datetime: sortFn_datetime,
+    text: sortFn_text,
+  },
+  columnMeta: metaHelper<{
     /** Extra classes for both the header and the body cell of this column. */
     className?: string;
-  }
-}
+  }>(),
+});
+
+type AlarmTableFeatures = typeof alarmTableFeatures;
 
 export type AlarmRow = {
   alarms: Doc<"alarms">;
@@ -46,7 +68,7 @@ function SortHeader({
   column,
 }: Readonly<{
   title: string;
-  column: Column<AlarmRow, unknown>;
+  column: Column<AlarmTableFeatures, AlarmRow, unknown>;
 }>) {
   const sorted = column.getIsSorted();
   const Icon =
@@ -80,7 +102,7 @@ export function WebhookHint() {
   );
 }
 
-export const columns: ColumnDef<AlarmRow>[] = [
+export const columns: ColumnDef<AlarmTableFeatures, AlarmRow>[] = [
   {
     accessorKey: "alarms.keyword",
     id: "keyword",
